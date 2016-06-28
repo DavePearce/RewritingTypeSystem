@@ -1,0 +1,239 @@
+package types.core
+
+// Notes on convergence proof.
+//
+// Every reduction marked "Proof: trivial" is guaranteed to
+// reduce the size of the underlying automaton (i.e. term graph) by at
+// least one node.  Hence, they are trivially convergent as repeated
+// application will reduce the automaton to size 1.
+
+// =======================================================
+// Syntax
+// =======================================================
+
+// Primitives
+term Void
+term Any
+term Int
+define Primitive as Any | Void | Int
+
+// Tuples
+term Tuple[Type...] // invariant |types| > 0
+
+// Negations
+term Not(Type)
+
+// Unions
+term Or{Type...} // invariant |types| > 0
+
+// Intersections
+term And{Type...}
+
+// Positive and Negative Atoms
+define PositiveAtom as Int | Any | Tuple[PositiveAtom...]
+define NegativeAtom as Not(PositiveAtom)
+
+// Intersection Operator (Definition 5)
+term Intersect[PositiveAtom,PositiveAtom]
+define IntersectingAtom as NegativeAtom | Not(Intersect) | Not(Void)
+
+// Canonical Conjuncts
+term Canonical{PositiveAtom,IntersectingAtom...}
+
+// Root terms
+term Root(Type)
+
+// Types
+define Type as Primitive | Tuple | Not | Or | And | Canonical | Intersect
+
+// =======================================================
+// Implicit or missing
+// =======================================================
+// These rules are either all implied implicity in the original
+// presentation, or were not needed, or were just missing.
+
+// Proof: trivial
+reduce Not(Any):
+    => Void
+
+// Proof: trivial
+reduce Or{Or{Type... t1s}, Type... t2s}:
+    => Or(t1s ++ t2s)
+
+// Proof: trivial
+reduce And{And{Type... t1s}, Type... t2s}:
+    => And(t1s ++ t2s)
+
+// =======================================================
+// Definition 5
+// =======================================================
+
+// ------------------- Definition 5(1) -----------------
+
+reduce Intersect[PositiveAtom t1, PositiveAtom t2]:
+    => t1, if t1 == t2
+
+// ------------------- Definition 5(2) -----------------
+
+// Proof: trivial
+reduce Intersect[Any, PositiveAtom t]:
+    => t
+
+// ------------------- Definition 5(3) -----------------
+
+// Proof: trivial
+reduce Intersect[PositiveAtom t, Any]:
+    => t
+
+// ------------------- Definition 5(4) -----------------
+
+// Proof: trivial
+reduce Intersect[Int, Tuple]:
+    => Void
+
+// ------------------- Definition 5(5) -----------------
+
+reduce Intersect[Tuple,Int]:
+    => Void
+
+// ------------------- Definition 5(6) -----------------
+
+// Proof: trivial
+reduce Intersect[Tuple[Type... ns], Tuple[Type... ms]]: 
+    => Void, if |ns| != |ms|      
+
+// Proof: trivial
+reduce Tuple[Type... ns]:
+    => Void, if some { t in ns | t is Void }
+  
+// ------------------- Definition 5(7) -----------------
+
+// (*) Proof: non-trivial ... ?
+reduce Intersect[Tuple[Type... ns], Tuple[Type... ms]]:
+     => let es = [ Intersect[ns[i],ms[i]] | i in 0..|ns| ]
+     in Tuple(es), if |ns| == |ms| // Def 6(8)
+
+// =======================================================
+// Definition 6
+// =======================================================
+
+// ------------------- Definition 6(1) -------------------
+
+// Proof: trivial.
+reduce Not(Not(Type t)):
+    => t
+
+// ------------------- Definition 6(2) -------------------
+
+// Proof: trivial
+reduce Not(Or{Type... ts}):
+    => let rs = { Not(t) | t in ts }
+       in And(rs)
+
+// ------------------- Definition 6(3) -------------------
+
+// Proof: trivial
+reduce Not(And{Type... ts}):
+    => let rs = { Not(t) | t in ts }
+       in Or(rs)
+
+// ------------------- Definition 6(4) -------------------
+
+// (*) Proof: non-trivial.  This increases the size of the
+// automaton.  Specifically, from at least 2+|xs|+|ys| to
+// 1+|xs|+(|xs|*|ys|).  To show this is convergent we must reason about
+// the number of And's which contain Or's.  This number decreases by one
+// on application of this rule, and no other rule increases this number []
+reduce And{Or{Type... xs}, Type... ys}:
+    => let ys = { And(x ++ ys) | x in xs }
+       in Or(ys)
+
+// ------------------- Definition 6(5) -------------------
+
+// Proof: trivial
+reduce Tuple[Or{Type... rs},Type...ts]:
+     => let tups = { Tuple(r++ts) | r in rs }
+        in Or(tups)
+
+// Proof: trivial
+reduce Tuple[Type t1, Or{Type... rs},Type...ts]:
+     => let tups = { Tuple([t1,r]++ts) | r in rs }
+        in Or(tups)
+
+// ------------------- Definition 6(6) -------------------
+
+// Proof: trivial
+reduce Tuple[And{Type... rs},Type...ts]:
+     => let tups = { Tuple(r++ts) | r in rs }
+        in And(tups)
+
+// Proof: trivial
+reduce Tuple[Type t1, And{Type... rs},Type...ts]:
+     => let tups = { Tuple([t1,r]++ts) | r in rs }
+        in And(tups)
+
+// ------------------- Definition 6(7) -------------------
+
+// Proof: trivial
+reduce Tuple[Not(Type t1),Type...ts]:
+     => let lhs = Tuple(Any++ts),
+            rhs = Not(Tuple(t1++ts))
+        in And{lhs,rhs}
+
+// Proof: trivial
+reduce Tuple[Type t1, Not(Type t2),Type...ts]:
+     => let lhs = Tuple([t1,Any]++ts),
+            rhs = Not(Tuple([t1,t2]++ts))
+        in And{lhs,rhs}
+
+// =======================================================
+// Definition 8
+// =======================================================
+
+// ------------------- Definition 8(1) -------------------
+
+// Proof: trivial
+reduce And{Void, Type... ts}:
+    => Void
+
+// ------------------- Definition 8(2) -------------------
+
+reduce And{PositiveAtom t1, PositiveAtom t2, Type... ts}:
+    => And(Intersect[t1,t2]++ts)
+
+// ------------------- Definition 8(3) -------------------
+
+// Proof: trivial
+reduce Canonical{PositiveAtom t1, Not(PositiveAtom t2), NegativeAtom... ts}
+requires t1 == t2:
+    => Void
+
+// ------------------- Definition 8(4) -------------------
+
+// Proof: trivial
+reduce Canonical{PositiveAtom p, Not(Void) x, IntersectingAtom... ts}:
+    => Canonical(p++ts)
+
+// ------------------- Definition 8(5) -------------------
+
+reduce Root(And{PositiveAtom p,NegativeAtom... ns}):
+    => let rs = { Not(Intersect[p,*n]) | n in ns }
+       in Root(Canonical(p++rs))
+
+reduce Root(Or{And{PositiveAtom p,NegativeAtom... ns},Type... ts}):
+    => let rs = { Not(Intersect[p,*n]) | n in ns }
+       in Root(Or(Canonical(p++rs) ++ ts))
+
+// ------------------- Definition 8(6) -------------------
+
+// Ignored as discussed in the paper.  This rule doesn't affect
+// soundness or completeness.
+
+// =======================================================
+// Root
+// =======================================================
+// The root is helpful to manage the staging of rewriting into
+// canonical forms.
+
+reduce Root(Void):
+    => Void

@@ -1,0 +1,46 @@
+<project name="Types" xmlns:maven="urn:maven-ant" default="build">
+   <!-- Load the Maven Ant tasks so that we can work with Maven repositories. -->
+  <typedef uri="urn:maven-ant"
+           classpath="lib/maven-ant-tasks-2.1.3.jar"
+           resource="org/apache/maven/artifact/ant/antlib.xml"/>
+
+  <!-- Paths to common JARs -->
+  <property name="WYBS_JAR" value="lib/wybs-v0.3.34.jar"/>
+  <property name="WYRL_JAR" value="lib/wyrl-v0.4.6.jar"/>
+  <property name="WYIL_JAR" value="lib/wyil-all-v0.3.40.jar"/>  
+
+  <!-- Set the classpath for Junit and its dependencies -->
+  <maven:dependencies pathId="junit.classpath">
+    <dependency groupId="junit" artifactId="junit" version="4.12"/>
+  </maven:dependencies>
+
+  <!-- Build files -->
+  <target name="build">
+    <taskdef name="wyrl" classname="wyrl.util.WyrlAntTask" classpath="${WYRL_JAR}:${WYBS_JAR}"/>
+    <wyrl srcdir="src" debug="false" source="types/core/Types.wyrl"
+	  output="types/core/Types.java"/>
+    <echo message="Building core library..."/> 
+    <javac srcdir="src" includeantruntime="false">
+      <include name="*/**"/>
+      <classpath>
+	<pathelement path="${WYRL_JAR}:${WYBS_JAR}:${WYIL_JAR}"/>
+        <path refid="junit.classpath"/>
+      </classpath>
+    </javac>
+    <echo message="Building test suites..."/>    
+    <javac srcdir="tests" includeantruntime="false">      
+      <include name="*/**"/>
+      <classpath>
+	<pathelement path="src:${WYRL_JAR}:${WYBS_JAR}:${WYIL_JAR}"/>
+        <path refid="junit.classpath"/>
+      </classpath>      
+    </javac>    
+  </target>
+
+  <!-- Clean files -->
+ <target name="clean">
+   <delete failonerror="false">
+     <fileset dir="." includes="**/*.class,src/types/core/Types.java"/>
+   </delete>
+ </target>
+</project>
