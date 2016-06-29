@@ -9,8 +9,8 @@ import java.util.List;
 import types.testing.AbstractTestSuite;
 
 public class TestSuiteRunner {
-	private static final int NWARMUPS = 50; // number of warm-up runs to discard
-	private static final int NRUNS = 50; // number of runs to average over
+	private static final int NWARMUPS = 5; // number of warm-up runs to discard
+	private static final int NRUNS = 5; // number of runs to average over
 	
 	public static void main(String[] args) throws InstantiationException, IllegalAccessException {
 		boolean rewriting;

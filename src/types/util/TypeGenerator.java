@@ -124,65 +124,86 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 	
 	private List<SyntacticType[]> generateCombinations(List<SyntacticType> types, int start, int end, int width) {
 		ArrayList<SyntacticType[]> combinations = new ArrayList<SyntacticType[]>();
-		// Create an n-dimensional counter, where each dimension ranges between
-		// 0 and size-1
-		for(int dim=0;dim!=width;++dim) {
-			int[] counter = new int[width];
-			int max = end - (start+1);
-			int[] maxes = new int[width];
-			Arrays.fill(maxes, end-1);
-			maxes[dim] = max;
-			//
-			while(!isFinished(counter,max)) {
-				SyntacticType[] combination = new SyntacticType[width];
+
+		// First, compute the irregular pieces
+		Counter counter = new Counter(width,end-1);
+		//
+		while(!counter.isFinished()) {
+			// First, ignore the "cube" which is the product of types all
+			// previously seen before.
+			if(!counter.allBelow(start)) {
+				SyntacticType[] combination = new SyntacticType[width];			
 				for(int i=0;i!=width;++i) {
-					if(i == dim) {
-						combination[i] = types.get(start+counter[i]);
-					} else {
-						combination[i] = types.get(counter[i]);
-					}
+					combination[i] = types.get((int) counter.get(i));
 				}
 				combinations.add(combination);
-				increment(counter,maxes);
 			}
+			counter.increment();
 		}
-		//
+		// Second, compute the regular pieces
+		
 		return combinations;
 	}
 	
-	/**
-	 * The counter is finished when each dimension has reached the maximum value
-	 * 
-	 * @param counter
-	 * @param max
-	 *            maximum value of any dimension
-	 * @return
-	 */
-	private boolean isFinished(int[] counter, int max) {
-		return counter[0] == -1;
-	}
-	
-	/**
-	 * To increment the counter we starting incrementing from the innermost
-	 * dimensions first. If a dimension has the maximum value, we roll it over
-	 * to zero and carry to the next dimension. Otherwise, we just increment the
-	 * given dimension by 1.
-	 * 
-	 * @param counter
-	 * @param max
-	 *            maximum value of any dimension
-	 */
-	private void increment(int[] counter, int[] maxes) {
-		int i = 0;
-		while (i < counter.length && counter[i] == maxes[i]) {
-			counter[i] = 0;
-			i = i + 1;
+	public static class Counter {
+		private final long[] items;
+		private final long max;
+		
+		public Counter(int dim, long max) {
+			this.items = new long[dim];
+			this.max = max;
 		}
-		if(i == counter.length) {
-			// signal count has finished
-			counter[0] = -1;
-		} else {
-			counter[i] = counter[i] + 1;
+		
+		public long get(int index) {
+			return items[index];
+		}
+		/**
+		 * The counter is finished when each dimension has reached the maximum value
+		 * 
+		 * @param counter
+		 * @param max
+		 *            maximum value of any dimension
+		 * @return
+		 */
+		public boolean isFinished() {
+			return items[0] == -1;
+		}
+		
+		/**
+		 * To increment the counter we starting incrementing from the innermost
+		 * dimensions first. If a dimension has the maximum value, we roll it over
+		 * to zero and carry to the next dimension. Otherwise, we just increment the
+		 * given dimension by 1.
+		 * 
+		 * @param counter
+		 * @param max
+		 *            maximum value of any dimension
+		 */
+		public void increment() {
+			int i = 0;
+			while (i < items.length && items[i] == max) {
+				items[i] = 0;
+				i = i + 1;
+			}
+			if(i == items.length) {
+				// signal count has finished
+				items[0] = -1;
+			} else {
+				items[i] = items[i] + 1;
+			}
+		}
+		
+		public boolean allBelow(long size) {
+			for(int i=0;i!=items.length;++i) {
+				if(items[i] >= size) {
+					return false;
+				}				
+			}
+			return true;
+		}
+		
+		public String toString() {
+			return Arrays.toString(items);
 		}
 	}
 	
@@ -245,8 +266,9 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 			return PRIMITIVE_TYPES[(int) index];
 		} else {
 			long depth_m1 = count(depth-1,width);
-			long diff = depth_m1 - count(depth-2,width);
-			long pow = 1;
+			long depth_m2 = count(depth-2,width);
+			long diff = depth_m1 - depth_m2;
+			
 			long count = 0;
 			for(int i=1;i<=width;++i) {
 				if(i == 1) {
@@ -262,30 +284,30 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 					}
 					count += diff;
 				} else {
+					long pow = pow(depth_m1,i) - pow(depth_m2,i); 
 					// unions, intersections and tuples
-					if(index < (count+(pow*diff*i))) {
+					if(index < (count+pow)) {
 						// tuple of width i
-						long[] dims = getDimensions(index-count,i,diff,depth_m1);
+						long[] dims = getDimensions(index-count,i,depth_m1,depth_m2);
 						SyntacticType[] types = getTypes(dims,depth-1,width);
 						return new SyntacticType.Tuple(types);
 					} 
-					count += (pow*diff*i);
-					if(index < (count+(pow*diff*i))) {
+					count += pow;
+					if(index < (count+pow)) {
 						// union of width i
-						long[] dims = getDimensions(index-count,i,diff,depth_m1);
+						long[] dims = getDimensions(index-count,i,depth_m1,depth_m2);
 						SyntacticType[] types = getTypes(dims,depth-1,width);
 						return new SyntacticType.Union(types);
 					} 
-					count += (pow*diff*i);
-					if(index < (count+(pow*diff*i))) {
+					count += pow;
+					if(index < (count+pow)) {
 						// intersection of width i
-						long[] dims = getDimensions(index-count,i,diff,depth_m1);
+						long[] dims = getDimensions(index-count,i,depth_m1,depth_m2);
 						SyntacticType[] types = getTypes(dims,depth-1,width);
 						return new SyntacticType.Intersection(types);
 					}
-					count += (pow*diff*i);
+					count += pow;
 				}
-				pow = pow * depth_m1;
 			}
 			throw new RuntimeException("deadcode reached: " + index + ", " + count);
 		}
@@ -299,24 +321,20 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 		return types;
 	}
 	
-	private static long[] getDimensions(long index, int nDims, long diff, long depth_m1) {
-		long pow = diff;
-		for(int i=1;i<nDims;++i) {
-			pow = pow * depth_m1; 
+	private static long[] getDimensions(long index, int width, long depth_m1, long depth_m2) {
+		Counter counter = new Counter(width,depth_m1 - 1);
+		//
+		while(counter.allBelow(depth_m2)) {
+			counter.increment();
 		}
-		long dim = index / pow;
-		index = index % pow;
-		long[] dims = new long[nDims];
-		for(int i=0;i!=nDims;++i) {
-			if(i == dim) {
-				dims[i] = (depth_m1 - diff) + (index % diff);
-				index = index / diff;
-			} else {
-				dims[i] = index % depth_m1;
-				index = index / depth_m1;
+		while(index > 0) {
+			index = index - 1;
+			counter.increment();
+			while(counter.allBelow(depth_m2)) {
+				counter.increment();
 			}
-		}		
-		return dims;
+		}
+		return counter.items;
 	}
 	
 	/**
@@ -334,22 +352,29 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 			return PRIMITIVE_TYPES.length;
 		} else {
 			long depth_m1 = count(depth-1,width);
-			long diff = depth_m1 - count(depth-2,width);			
+			long depth_m2 = count(depth-2,width);
+			long diff = depth_m1 - depth_m2;			
 			// 
 			long result = depth_m1;
-			long pow = 1;
 			for(int i=1;i<=width;++i) {
 				if(i == 1) {
 					// tuples + negations
 					result += 2 * diff;
 				} else {
 					// unions, intersections and tuples
-					result += 3 * (pow * diff * i);
+					result += 3 * (pow(depth_m1,i) - pow(depth_m2,i));
 				}
-				pow = pow * depth_m1;
 			}
 			return result;
 		}
+	}
+	
+	private static long pow(long base, long exp) {
+		long r = 1;
+		for(int i=0;i!=exp;++i) {
+			r = r * base;
+		}
+		return r;
 	}
 	
 	private static final SyntacticType[] PRIMITIVE_TYPES = {
@@ -357,23 +382,22 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 	};
 	
 	public static void main(String[] args) {
-		int depth = 3;
-		int width = 3;
+		int depth = 2;
+		int width = 2;
+		//
+		// Sanity check the two different ways of generating the space against
+		// each other.
 		//
 		TypeGenerator space = new TypeGenerator(depth,width);
-		//List<SyntacticType> types = space.generate();
-//		for(SyntacticType t : types) {
-//			System.out.println(t);
-//		}
-		System.out.println("--");
+		List<SyntacticType> types = space.generate();
 		int i = 0;
-//		for(SyntacticType t : space) {
-//			SyntacticType ot = types.get(i++); 
-//			if(!t.equals(ot)) {
-//				System.out.println("DIFF: " + t + " vs " + ot);	
-//			}
-//		}
-//		System.out.println("Generated " + types.size() + " types");
-		System.out.println("Counted " + count(depth,width) + " types");
+		for(SyntacticType t : space) {
+			SyntacticType ot = types.get(i++);
+			if(!t.equals(ot)) {
+				System.out.println("*** MISSING: " + t + " v " + ot);
+			}
+		}
+		//System.out.println("Generated " + types.size() + " types");
+		System.out.println("Counted " + count(depth,width) + " types vs " + i);
 	}
 }

@@ -41,7 +41,7 @@ public class TestSuiteGenerator {
 
 	public void run() {
 		// First, generate the list of types
-		stripInvalidTypes(types);
+		//stripInvalidTypes(types);
 		//
 		printPreamble();
 		int count = 0;
@@ -325,6 +325,6 @@ public class TestSuiteGenerator {
 	}
 	
 	public static void main(String[] args) {
-		run(2,2,100);
+		run(3,2,100);
 	}
 }
