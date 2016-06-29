@@ -23,6 +23,15 @@ public abstract class SyntacticType {
 	public static final Any Any = new Any();
 	
 	/**
+	 * Determine whether this type accepts a give value or not. This defines the
+	 * meaning of types in terms of a semantic interpretation.
+	 * 
+	 * @param v
+	 * @return
+	 */
+	public abstract boolean accepts(Value v);
+	
+	/**
 	 * Represents the primitive integer type
 	 * 
 	 * @author David J. Pearce
@@ -32,6 +41,10 @@ public abstract class SyntacticType {
 		private Int() {}
 		public String toString() {
 			return "int";
+		}
+		@Override
+		public boolean accepts(Value v) {
+			return v instanceof Value.Int;
 		}
 	}
 	
@@ -46,6 +59,11 @@ public abstract class SyntacticType {
 		
 		public String toString() {
 			return "any";
+		}
+
+		@Override
+		public boolean accepts(Value v) {
+			return true;
 		}
 	}
 	
@@ -80,6 +98,11 @@ public abstract class SyntacticType {
 		
 		public String toString() {
 			return "!" + element;
+		}
+
+		@Override
+		public boolean accepts(Value v) {
+			return !element.accepts(v);
 		}
 	}
 	
@@ -122,6 +145,22 @@ public abstract class SyntacticType {
 			}
 			return r + "}";
 		}
+
+		@Override
+		public boolean accepts(Value v) {
+			if (v instanceof Value.Tuple) {
+				Value.Tuple t = (Value.Tuple) v;
+				if (t.size() == elements.length) {
+					for (int i = 0; i != elements.length; ++i) {
+						if (!elements[i].accepts(t.get(i))) {
+							return false;
+						}
+					}
+					return true;
+				}
+			}
+			return false;
+		}
 	}
 	
 	/**
@@ -162,6 +201,16 @@ public abstract class SyntacticType {
 			}
 			return r + ")";
 		}
+
+		@Override
+		public boolean accepts(Value v) {
+			for(SyntacticType t : elements) {
+				if(!t.accepts(v)) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 	
 	/**
@@ -201,6 +250,15 @@ public abstract class SyntacticType {
 				r = r + elements[i].toString();
 			}
 			return r + ")";
+		}
+		@Override
+		public boolean accepts(Value v) {
+			for(SyntacticType t : elements) {
+				if(t.accepts(v)) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 }

@@ -20,31 +20,33 @@ public class AbstractTestSuite {
 	 */
 	public static boolean rewriting = true;
 	
-	public static void testValid(String supertype, String subtype) {
-		SyntacticType sup = new Parser(supertype).parse();
-		SyntacticType sub = new Parser(subtype).parse();
-		if(rewriting) {
+	public static void testValid(SyntacticType sup, SyntacticType sub) {
+		if (rewriting) {
 			if (!RewritingSubtypeOperator.isSubtype(sup, sub)) {
-				//fail("should be subtypes (rewriting operator)");
+				//System.out.println("*** ERROR: !(" + sup + ":>" + sub + ")");
+				fail("should be subtypes (rewriting operator)");
 			}
 		} else {
 			if (!WhileySubtypeOperator.isSubtype(sup, sub)) {
-				//fail("should be subtypes (whiley operator)");
+				fail("should be subtypes (whiley operator)");
 			}
 		}
 	}
 	
-	public static void testInvalid(String supertype, String subtype) {
-		SyntacticType sup = new Parser(supertype).parse();
-		SyntacticType sub = new Parser(subtype).parse();
+	public static void testInvalid(SyntacticType sup, SyntacticType sub) {
 		if(rewriting) {
 			if (RewritingSubtypeOperator.isSubtype(sup, sub)) {
-				//fail("should not be subtypes (rewriting operator)");
+				//System.out.println("*** ERROR: " + sup + ":>" + sub);
+				fail("should not be subtypes (rewriting operator)");
 			}
 		} else {
 			if (WhileySubtypeOperator.isSubtype(sup, sub)) {
-				//fail("should not be subtypes (whiley operator)");
+				fail("should not be subtypes (whiley operator)");
 			}
 		}		
+	}
+	
+	public static SyntacticType parse(String type) {
+		return new Parser(type).parse();
 	}
 }

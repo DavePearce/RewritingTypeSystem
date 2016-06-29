@@ -1,16 +1,21 @@
 package types.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
 import types.core.SyntacticType;
+import types.core.Value;
 import types.core.WhileySubtypeOperator;
+import types.testing.AbstractTestSuite;
 
 /**
  * Generate subtype tests as instances of JUnit tests. This is done using a
@@ -25,11 +30,13 @@ public class TestSuiteGenerator {
 	private final int depth;
 	private final int width;
 	private final List<SyntacticType> types;
+	private final Set<Value> domain;
 
-	public TestSuiteGenerator(int depth, int width, List<SyntacticType> types) {
+	public TestSuiteGenerator(int depth, int width, List<SyntacticType> types, Set<Value> domain) {
 		this.depth = depth;
 		this.width = width;
 		this.types = types;
+		this.domain = domain;
 	}
 
 	public void run() {
@@ -42,7 +49,7 @@ public class TestSuiteGenerator {
 		boolean firstTime = true;
 		for (int i = 0; i != types.size(); ++i) {
 			for (int j = 0; j != types.size(); ++j) {
-				if ((count % 10000) == 0) {
+				if ((count % 1000) == 0) {
 					// Split inner classes up. The reason we use inner classes
 					// is to ensure that the number of constant pool items
 					// remains within the 64K limit. Otherwise, the generated
@@ -73,17 +80,26 @@ public class TestSuiteGenerator {
 		System.out.println("import org.junit.runners.MethodSorters;");
 		System.out.println("import org.junit.Test;");
 		System.out.println("import types.testing.AbstractTestSuite;");
+		System.out.println("import types.core.SyntacticType;");
 		System.out.println();
 		System.out.println("@FixMethodOrder(MethodSorters.NAME_ASCENDING)");
 		System.out.println("public class " + className + " extends AbstractTestSuite {");
 	}
 
 	private void printValidTest(int id, SyntacticType sup, SyntacticType sub) {
-		System.out.println("\t\t@Test public void test_" + id + "() { testValid(\"" + sup + "\",\"" + sub + "\"); }");
+		String supName = "test_" + id + "_sup";
+		String subName = "test_" + id + "_sub";
+		System.out.println("\t\tprivate static final SyntacticType " + supName + " = parse(\"" + sup + "\");");
+		System.out.println("\t\tprivate static final SyntacticType " + subName + " = parse(\"" + sub + "\");");
+		System.out.println("\t\t@Test public void test_" + id + "() { testValid(" + supName + "," + subName + "); }\n");
 	}
 
 	private void printInvalidTest(int id, SyntacticType sup, SyntacticType sub) {
-		System.out.println("\t\t@Test public void test_" + id + "() { testInvalid(\"" + sup + "\",\"" + sub + "\"); }");
+		String supName = "test_" + id + "_sup";
+		String subName = "test_" + id + "_sub";
+		System.out.println("\t\tprivate static final SyntacticType " + supName + " = parse(\"" + sup + "\");");
+		System.out.println("\t\tprivate static final SyntacticType " + subName + " = parse(\"" + sub + "\");");
+		System.out.println("\t\t@Test public void test_" + id + "() { testInvalid(" + supName + "," + subName + "); }\n");
 	}
 
 	private void printPostamble() {
@@ -103,9 +119,36 @@ public class TestSuiteGenerator {
 		// tested and assumed to be largely correct. In cases where the
 		// rewrite-based operator disagrees we must then manualy inspect to
 		// determine which is correct.
-		return WhileySubtypeOperator.isSubtype(sup, sub);
+		Set<Value> supset = computeSemanticSet(sup, domain);
+		Set<Value> subset = computeSemanticSet(sub, domain);
+		return isSupset(supset,subset);
 	}
 
+	/**
+	 * Determine whether one value set is a super set of another.
+	 * 
+	 * @param superSet
+	 * @param supSet
+	 */
+	private static boolean isSupset(Set<Value> superSet, Set<Value> supSet) {
+		for(Value v : supSet) {
+			if(!superSet.contains(v)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	private static Set<Value> computeSemanticSet(SyntacticType t, Set<Value> domain) {
+		HashSet<Value> result = new HashSet<Value>();
+		for(Value v : domain) {
+			if(t.accepts(v)) {
+				result.add(v);;
+			}
+		}
+		return result;
+	}
+	
 	/**
 	 * Strip out any types which are "invalid". For example, the type {!any} is
 	 * considered invalid by the Whiley subtype operator because it is
@@ -177,18 +220,62 @@ public class TestSuiteGenerator {
 		}
 	}
 	
+	public static Set<Value> generateDomain(int depth, int width) {
+		if(depth == 0) {
+			// Add a token integer.  One is actually enough.
+			HashSet<Value> rs = new HashSet<Value>();
+			rs.add(new Value.Int(0));
+			return rs;
+		} else {
+			Set<Value> depth_m1 = generateDomain(depth-1, width);
+			Set<Value> result = new HashSet<Value>(depth_m1);
+			for(int w=1;w<=width;++w) {
+				Set<Value> perms = genAllPermutations(w,depth_m1);
+				result.addAll(perms);
+			}
+			return result;
+		}
+	}
+	
+	public static Set<Value> genAllPermutations(int width, Set<Value> values) {
+		HashSet<Value> result = new HashSet<Value>();
+		if(width == 1) {
+			for(Value v : values) {
+				result.add(new Value.Tuple(v));
+			}
+		} else {
+			Set<Value> width_m1 = genAllPermutations(width-1,values);
+			for(Value vs : width_m1) {
+				Value.Tuple t = (Value.Tuple) vs;
+				int t_size = t.size();
+				for(Value v : values) {					
+					Value[] ns = Arrays.copyOf(t.getAll(), t_size+1);
+					ns[t_size] = v;
+					result.add(new Value.Tuple(ns));
+				}
+			}
+		}
+		return result;
+	}
+	
 	public static void run(int depth, int width, int cardinality) {
 		TypeGenerator typeGen = new TypeGenerator(depth, width);
 		List<SyntacticType> types = selectRandomElements(typeGen,cardinality);
+		Set<Value> domain = generateDomain(depth+1,width+1);
+//		SyntacticType sup = AbstractTestSuite.parse("!!int");
+//		SyntacticType sub = AbstractTestSuite.parse("!{any}");
+//		System.out.println(computeSemanticSet(sup,domain));
+//		System.out.println(computeSemanticSet(sub,domain));
+		//System.out.println("GOT: " + domain);
 //		System.out.println("GENERATED: " + types.size() + " types");
 //		for(SyntacticType t : types) {
 //			System.out.println(t);
 //		}
-		TestSuiteGenerator testGen = new TestSuiteGenerator(depth,width,types);
+		TestSuiteGenerator testGen = new TestSuiteGenerator(depth,width,types,domain);
 		testGen.run();
 	}
 	
 	public static void main(String[] args) {
-		run(3,2,200);
+		run(2,1,100);
 	}
 }

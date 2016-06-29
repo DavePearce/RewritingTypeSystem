@@ -2,6 +2,10 @@ package types.testing;
 
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
+
+import types.core.SyntacticType;
+import types.io.Parser;
+
 import org.junit.Test;
 
 /**
@@ -224,6 +228,47 @@ public class ManualTestSuite extends AbstractTestSuite {
 	
 	@Test
 	public void test_41() {
-		testInvalid("!(int | any)","((int & any) & {any, any})");
+		testValid("!(int | any)","((int & any) & {any, any})");
+	}
+	
+	@Test
+	public void test_42() {
+		testValid("(!any | !any)","!any");
+	}
+	
+	@Test
+	public void test_43() {
+		testValid("!any","(!any | !any)");
+	}
+	
+	@Test
+	public void test_44() {
+		testValid("any","(!any | !any)");
+	}
+	
+	@Test
+	public void test_45() {
+		testValid("int","(!any | !any)");
+	}
+	
+	@Test
+	public void test_46() {
+		testInvalid("(!any | !any)","any");
+	}
+
+	// =======================================================
+	// Misc
+	// =======================================================
+	
+	public static void testValid(String supertype, String subtype) {
+		SyntacticType sup = parse(supertype);
+		SyntacticType sub = parse(subtype);
+		testValid(sup,sub);
+	}
+	
+	public static void testInvalid(String supertype, String subtype) {
+		SyntacticType sup = parse(supertype);
+		SyntacticType sub = parse(subtype);
+		testInvalid(sup,sub);
 	}
 }

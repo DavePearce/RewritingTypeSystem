@@ -126,16 +126,25 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 		ArrayList<SyntacticType[]> combinations = new ArrayList<SyntacticType[]>();
 		// Create an n-dimensional counter, where each dimension ranges between
 		// 0 and size-1
-		int[] counter = new int[width];
-		int max = end - (start+1);
-		//
-		while(!isFinished(counter,max)) {
-			SyntacticType[] combination = new SyntacticType[width];
-			for(int i=0;i!=width;++i) {
-				combination[i] = types.get(start+counter[i]);
+		for(int dim=0;dim!=width;++dim) {
+			int[] counter = new int[width];
+			int max = end - (start+1);
+			int[] maxes = new int[width];
+			Arrays.fill(maxes, end-1);
+			maxes[dim] = max;
+			//
+			while(!isFinished(counter,max)) {
+				SyntacticType[] combination = new SyntacticType[width];
+				for(int i=0;i!=width;++i) {
+					if(i == dim) {
+						combination[i] = types.get(start+counter[i]);
+					} else {
+						combination[i] = types.get(counter[i]);
+					}
+				}
+				combinations.add(combination);
+				increment(counter,maxes);
 			}
-			combinations.add(combination);
-			increment(counter,max);
 		}
 		//
 		return combinations;
@@ -163,9 +172,9 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 	 * @param max
 	 *            maximum value of any dimension
 	 */
-	private void increment(int[] counter, int max) {
+	private void increment(int[] counter, int[] maxes) {
 		int i = 0;
-		while (i < counter.length && counter[i] == max) {
+		while (i < counter.length && counter[i] == maxes[i]) {
 			counter[i] = 0;
 			i = i + 1;
 		}
@@ -212,11 +221,11 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 	 * @return
 	 */
 	private static SyntacticType construct(long index, int depth, int width) {
-		long subcount = count(depth-1,width);
-		if(index < subcount) {
+		long depth_m1 = count(depth-1,width);
+		if(index < depth_m1) {
 			return construct(index,depth-1,width);
 		} else {
-			index = index - subcount; // index into my space
+			index = index - depth_m1; // index into my space
 			return constructWithin(index,depth,width);
 		}
 	}
@@ -235,66 +244,78 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 		if(depth == 0) {
 			return PRIMITIVE_TYPES[(int) index];
 		} else {
-			long diff = count(depth-1,width) - count(depth-2,width);
+			long depth_m1 = count(depth-1,width);
+			long diff = depth_m1 - count(depth-2,width);
 			long pow = 1;
 			long count = 0;
 			for(int i=1;i<=width;++i) {
-				pow = pow * diff;
 				if(i == 1) {
 					// tuples + negations
-					if(index < (count+pow)) {
+					if(index < (count+diff)) {
 						// tuple of width 1
 						return new SyntacticType.Tuple(constructWithin(index-count,depth-1,width));
 					} 
-					count += pow;
-					if(index < (count+pow)) {
+					count += diff;
+					if(index < (count+diff)) {
 						// negation
 						return new SyntacticType.Negation(constructWithin(index-count,depth-1,width));
 					}
-					count += pow;
+					count += diff;
 				} else {
 					// unions, intersections and tuples
-					if(index < (count+pow)) {
+					if(index < (count+(pow*diff*i))) {
 						// tuple of width i
-						long[] dims = getDimensions(index-count,i,diff);
+						long[] dims = getDimensions(index-count,i,diff,depth_m1);
 						SyntacticType[] types = getTypes(dims,depth-1,width);
 						return new SyntacticType.Tuple(types);
 					} 
-					count += pow;
-					if(index < (count+pow)) {
+					count += (pow*diff*i);
+					if(index < (count+(pow*diff*i))) {
 						// union of width i
-						long[] dims = getDimensions(index-count,i,diff);
+						long[] dims = getDimensions(index-count,i,diff,depth_m1);
 						SyntacticType[] types = getTypes(dims,depth-1,width);
 						return new SyntacticType.Union(types);
 					} 
-					count += pow;
-					if(index < (count+pow)) {
+					count += (pow*diff*i);
+					if(index < (count+(pow*diff*i))) {
 						// intersection of width i
-						long[] dims = getDimensions(index-count,i,diff);
+						long[] dims = getDimensions(index-count,i,diff,depth_m1);
 						SyntacticType[] types = getTypes(dims,depth-1,width);
 						return new SyntacticType.Intersection(types);
 					}
-					count += pow;
+					count += (pow*diff*i);
 				}
+				pow = pow * depth_m1;
 			}
-			throw new RuntimeException("deadcode reached");
+			throw new RuntimeException("deadcode reached: " + index + ", " + count);
 		}
 	}
 	
 	private static SyntacticType[] getTypes(long[] indices, int depth, int width) {
 		SyntacticType[] types = new SyntacticType[indices.length];
 		for(int i=0;i!=indices.length;++i) {
-			types[i] = constructWithin(indices[i],depth,width);
+			types[i] = construct(indices[i],depth,width);
 		}
 		return types;
 	}
 	
-	private static long[] getDimensions(long index, int nDims, long pow) {
+	private static long[] getDimensions(long index, int nDims, long diff, long depth_m1) {
+		long pow = diff;
+		for(int i=1;i<nDims;++i) {
+			pow = pow * depth_m1; 
+		}
+		long dim = index / pow;
+		index = index % pow;
 		long[] dims = new long[nDims];
 		for(int i=0;i!=nDims;++i) {
-			dims[i] = index % pow;
-			index = index / pow;
-		}
+			if(i == dim) {
+				dims[i] = (depth_m1 - diff) + (index % diff);
+				index = index / diff;
+			} else {
+				dims[i] = index % depth_m1;
+				index = index / depth_m1;
+			}
+		}		
 		return dims;
 	}
 	
@@ -312,19 +333,20 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 		} else if(depth == 0) {
 			return PRIMITIVE_TYPES.length;
 		} else {
-			long result = count(depth-1,width);
-			long diff = result - count(depth-2,width);			
+			long depth_m1 = count(depth-1,width);
+			long diff = depth_m1 - count(depth-2,width);			
 			// 
+			long result = depth_m1;
 			long pow = 1;
 			for(int i=1;i<=width;++i) {
-				pow = pow * diff;
 				if(i == 1) {
 					// tuples + negations
-					result += 2 * pow;
+					result += 2 * diff;
 				} else {
 					// unions, intersections and tuples
-					result += 3 * pow;
+					result += 3 * (pow * diff * i);
 				}
+				pow = pow * depth_m1;
 			}
 			return result;
 		}
@@ -344,12 +366,13 @@ public class TypeGenerator implements Iterable<SyntacticType> {
 //			System.out.println(t);
 //		}
 		System.out.println("--");
-		//ArrayList<SyntacticType> nTypes = new ArrayList<SyntacticType>();
-		for(SyntacticType t : space) {
-			//System.out.println(t);
-			//nTypes.add(t);
-		}
-//		System.out.println("EQUALS: " + types.equals(nTypes));
+		int i = 0;
+//		for(SyntacticType t : space) {
+//			SyntacticType ot = types.get(i++); 
+//			if(!t.equals(ot)) {
+//				System.out.println("DIFF: " + t + " vs " + ot);	
+//			}
+//		}
 //		System.out.println("Generated " + types.size() + " types");
 		System.out.println("Counted " + count(depth,width) + " types");
 	}
