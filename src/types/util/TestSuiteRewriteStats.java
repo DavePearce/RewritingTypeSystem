@@ -18,13 +18,18 @@ public class TestSuiteRewriteStats {
 		String className = args[0];
 		try {
 			Class<? extends AbstractTestSuite> suiteClass = (Class<? extends AbstractTestSuite>) Class.forName(className);
-			AbstractTestSuite suiteInstance = suiteClass.newInstance();
 			List<Method> testCases = findTestCases(suiteClass,className);
+			List<Object> testInstances = new ArrayList<Object>();
+			// Create class instances
+			for(Method m : testCases) {
+				testInstances.add(m.getDeclaringClass().newInstance());
+			}
 			long[] rewrites = new long[testCases.size()];			
 			
 			for(int i=0;i!=testCases.size();++i) {
-				rewrites[i] = runExperiment(suiteInstance,testCases.get(i));				
+				rewrites[i] = runExperiment(testInstances.get(i),testCases.get(i));				
 			}
+			System.out.println("Command-Line Options: " + Arrays.toString(args));
 			System.out.println("Total rewrites: " + total(rewrites) + " rewrites");
 			double mean = average(rewrites);
 			double stddev = standardDeviation(rewrites);
@@ -73,17 +78,21 @@ public class TestSuiteRewriteStats {
 		return Math.sqrt(u2mean);
 	}
 	
+
 	private static List<Method> findTestCases(Class<?> suite, String className) throws ClassNotFoundException {
-		ArrayList<Method> methods = new ArrayList<Method>();		
-		for(Method m : suite.getDeclaredMethods()) {
-			if(m.getName().startsWith("test_")) {
-				methods.add(m);
+		ArrayList<Method> methods = new ArrayList<Method>();
+		for(Class<?> inner : suite.getClasses()) {
+			for(Method m : inner.getDeclaredMethods()) {
+				if(m.getName().startsWith("test_")) {
+					methods.add(m);
+				}
 			}
 		}
 		return methods;
 	}
 	
-	private static long runExperiment(AbstractTestSuite suite, Method testCase) {
+	
+	private static long runExperiment(Object suite, Method testCase) {
 		try {
 			testCase.invoke(suite);
 			return RewritingSubtypeOperator.numRewrites;

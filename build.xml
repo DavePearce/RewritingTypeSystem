@@ -19,6 +19,8 @@
     <taskdef name="wyrl" classname="wyrl.util.WyrlAntTask" classpath="${WYRL_JAR}:${WYBS_JAR}"/>
     <wyrl srcdir="src" debug="false" source="types/core/Types.wyrl"
 	  output="types/core/Types.java"/>
+    <wyrl srcdir="src" debug="false" source="types/core/TypesOptimised.wyrl"
+	  output="types/core/TypesOptimised.java"/>    
     <echo message="Building core library..."/> 
     <javac srcdir="src" includeantruntime="false">
       <include name="*/**"/>

@@ -10,14 +10,23 @@ import types.testing.AbstractTestSuite;
 
 public class TestSuiteRunner {
 	private static final int NWARMUPS = 50; // number of warm-up runs to discard
-	private static final int NRUNS = 10; // number of runs to average over
+	private static final int NRUNS = 50; // number of runs to average over
 	
 	public static void main(String[] args) throws InstantiationException, IllegalAccessException {
+		boolean rewriting;
 		if(args.length == 0) {
 			System.out.println("usage: TestSuiteRunner --(rewriting|whiley) TestSuiteClass");
 			System.exit(1);
-		}
-		boolean rewriting = args[0].equals("--rewriting");		
+			return;
+		} else if(args[0].equals("--rewriting")) {
+			rewriting = true;
+		} else if(args[0].equals("--whiley")) {
+			rewriting = false;
+		} else {
+			System.out.println("usage: TestSuiteRunner --(rewriting|whiley) TestSuiteClass");
+			System.exit(1);
+			return;
+		}		
 		String className = args[1];
 		try {
 			Class<? extends AbstractTestSuite> suiteClass = (Class<? extends AbstractTestSuite>) Class.forName(className);
@@ -42,6 +51,7 @@ public class TestSuiteRunner {
 				System.gc();
 			}
 			long finish = System.currentTimeMillis();
+			System.out.println("Command-Line Options: " + Arrays.toString(args));
 			System.out.println("Total time: " + (finish-warmupStart) + "ms");
 			System.out.println("Warmup time: " + (runsStart-warmupStart) + "ms");
 			System.out.println("Total run time: " + (finish-runsStart) + "ms");

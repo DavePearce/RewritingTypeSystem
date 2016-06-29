@@ -1,5 +1,4 @@
 package types.testing;
-
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Test;

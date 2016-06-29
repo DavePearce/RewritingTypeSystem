@@ -29,10 +29,10 @@ import types.testing.AbstractTestSuite;
 public class TestSuiteGenerator {
 	private final int depth;
 	private final int width;
-	private final List<SyntacticType> types;
-	private final Set<Value> domain;
+	private final ArrayList<SyntacticType> types;
+	private final ArrayList<Value> domain;
 
-	public TestSuiteGenerator(int depth, int width, List<SyntacticType> types, Set<Value> domain) {
+	public TestSuiteGenerator(int depth, int width, ArrayList<SyntacticType> types, ArrayList<Value> domain) {
 		this.depth = depth;
 		this.width = width;
 		this.types = types;
@@ -119,9 +119,11 @@ public class TestSuiteGenerator {
 		// tested and assumed to be largely correct. In cases where the
 		// rewrite-based operator disagrees we must then manualy inspect to
 		// determine which is correct.
-		Set<Value> supset = computeSemanticSet(sup, domain);
-		Set<Value> subset = computeSemanticSet(sub, domain);
-		return isSupset(supset,subset);
+		
+//		Set<Value> supset = computeSemanticSet(sup, domain);
+//		Set<Value> subset = computeSemanticSet(sub, domain);
+//		return isSupset(supset,subset);
+		return WhileySubtypeOperator.isSubtype(sup, sub);
 	}
 
 	/**
@@ -130,8 +132,8 @@ public class TestSuiteGenerator {
 	 * @param superSet
 	 * @param supSet
 	 */
-	private static boolean isSupset(Set<Value> superSet, Set<Value> supSet) {
-		for(Value v : supSet) {
+	private static boolean isSupset(Set<Value> superSet, Set<Value> subSet) {
+		for(Value v : subSet) {
 			if(!superSet.contains(v)) {
 				return false;
 			}
@@ -139,11 +141,12 @@ public class TestSuiteGenerator {
 		return true;
 	}
 	
-	private static Set<Value> computeSemanticSet(SyntacticType t, Set<Value> domain) {
+	private static Set<Value> computeSemanticSet(SyntacticType t, ArrayList<Value> domain) {
 		HashSet<Value> result = new HashSet<Value>();
-		for(Value v : domain) {
+		for(int i=0;i!=domain.size();++i) {
+			Value v = domain.get(i);
 			if(t.accepts(v)) {
-				result.add(v);;
+				result.add(v);
 			}
 		}
 		return result;
@@ -180,7 +183,7 @@ public class TestSuiteGenerator {
 	 * @param n
 	 * @return
 	 */
-	public static List<SyntacticType> selectRandomElements(TypeGenerator generator, int n) {
+	public static ArrayList<SyntacticType> selectRandomElements(TypeGenerator generator, int n) {
 		long space = generator.size();
 		TypeGenerator.Iterator iter = generator.iterator();
 		ArrayList<SyntacticType> types = new ArrayList<SyntacticType>();
@@ -220,48 +223,94 @@ public class TestSuiteGenerator {
 		}
 	}
 	
-	public static Set<Value> generateDomain(int depth, int width) {
+	public static void generateDomain(int depth, int width, ArrayList<Value> result) {
 		if(depth == 0) {
 			// Add a token integer.  One is actually enough.
-			HashSet<Value> rs = new HashSet<Value>();
-			rs.add(new Value.Int(0));
-			return rs;
+			result.add(new Value.Int(0));
 		} else {
-			Set<Value> depth_m1 = generateDomain(depth-1, width);
-			Set<Value> result = new HashSet<Value>(depth_m1);
-			for(int w=1;w<=width;++w) {
-				Set<Value> perms = genAllPermutations(w,depth_m1);
-				result.addAll(perms);
+			generateDomain(depth-1, width, result);
+			int depth_m1 = result.size();
+			for(int w=1;w<=width;++w) {				
+				genAllPermutations(w,depth_m1,result);
 			}
-			return result;
 		}
 	}
 	
-	public static Set<Value> genAllPermutations(int width, Set<Value> values) {
-		HashSet<Value> result = new HashSet<Value>();
+	public static void genAllPermutations(int width, int end, ArrayList<Value> values) {
 		if(width == 1) {
-			for(Value v : values) {
-				result.add(new Value.Tuple(v));
+			for(int i=0;i<end;++i) {
+				Value v = values.get(i);
+				values.add(new Value.Tuple(v));
 			}
 		} else {
-			Set<Value> width_m1 = genAllPermutations(width-1,values);
-			for(Value vs : width_m1) {
-				Value.Tuple t = (Value.Tuple) vs;
-				int t_size = t.size();
-				for(Value v : values) {					
-					Value[] ns = Arrays.copyOf(t.getAll(), t_size+1);
-					ns[t_size] = v;
-					result.add(new Value.Tuple(ns));
+			Counter c = new Counter(width,end-1);
+			while(!c.isFinished()) {
+				Value[] vs = new Value[width];
+				for(int i=0;i!=width;++i) {
+					vs[i] = values.get(c.items[i]);
 				}
+				values.add(new Value.Tuple(vs));
+				c.increment();
+			}			
+		}
+	}
+	
+	public static class Counter {
+		private final int[] items;
+		private final int max;
+		
+		public Counter(int dim, int max) {
+			this.items = new int[dim];
+			this.max = max;
+		}
+		/**
+		 * The counter is finished when each dimension has reached the maximum value
+		 * 
+		 * @param counter
+		 * @param max
+		 *            maximum value of any dimension
+		 * @return
+		 */
+		public boolean isFinished() {
+			return items[0] == -1;
+		}
+		
+		/**
+		 * To increment the counter we starting incrementing from the innermost
+		 * dimensions first. If a dimension has the maximum value, we roll it over
+		 * to zero and carry to the next dimension. Otherwise, we just increment the
+		 * given dimension by 1.
+		 * 
+		 * @param counter
+		 * @param max
+		 *            maximum value of any dimension
+		 */
+		public void increment() {
+			int i = 0;
+			while (i < items.length && items[i] == max) {
+				items[i] = 0;
+				i = i + 1;
+			}
+			if(i == items.length) {
+				// signal count has finished
+				items[0] = -1;
+			} else {
+				items[i] = items[i] + 1;
 			}
 		}
-		return result;
+		
+		public String toString() {
+			return Arrays.toString(items);
+		}
 	}
 	
 	public static void run(int depth, int width, int cardinality) {
 		TypeGenerator typeGen = new TypeGenerator(depth, width);
-		List<SyntacticType> types = selectRandomElements(typeGen,cardinality);
-		Set<Value> domain = generateDomain(depth+1,width+1);
+		ArrayList<SyntacticType> types = selectRandomElements(typeGen,cardinality);
+		ArrayList<Value> domain = new ArrayList<Value>();
+		//generateDomain(depth+1,width+1,domain);
+//		System.err.println("COMPUTED DOMAIN: " + domain.size());
+//		System.err.println("REDUCED DOMAIN: " + new HashSet<Value>(domain).size());
 //		SyntacticType sup = AbstractTestSuite.parse("!!int");
 //		SyntacticType sub = AbstractTestSuite.parse("!{any}");
 //		System.out.println(computeSemanticSet(sup,domain));
@@ -276,6 +325,6 @@ public class TestSuiteGenerator {
 	}
 	
 	public static void main(String[] args) {
-		run(2,1,100);
+		run(2,2,100);
 	}
 }

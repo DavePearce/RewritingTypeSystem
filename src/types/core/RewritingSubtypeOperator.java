@@ -12,7 +12,7 @@ import wyrw.util.*;
 
 /**
  * Provides an implementation of subtyping based on the rewrite rules found in
- * Types.wyrl.
+ * TypesOptimised.wyrl.
  * 
  * @author David J. Pearce
  *
@@ -36,14 +36,14 @@ public class RewritingSubtypeOperator {
 	public static boolean isSubtype(SyntacticType sup, SyntacticType sub)  {
 		SyntacticType res = new SyntacticType.Intersection(sub, new SyntacticType.Negation(sup));
 		Automaton automaton = toAutomaton(res);
-		Reduction rewrite = new Reduction(Types.SCHEMA, null, Types.reductions);
+		Reduction rewrite = new Reduction(TypesOptimised.SCHEMA, null, TypesOptimised.reductions);
 		Rewriter rewriter = new LinearRewriter(rewrite, LinearRewriter.UNFAIR_HEURISTIC);
 		rewrite.initialise(automaton);
 		// grind 10000 steps (if necessary)
 		rewriter.apply(10000);
 		//printReduction(rewrite,sup,sub);		
 		// Store stats
-		numRewrites = rewrite.steps().size();
+		numRewrites = rewrite.steps().size();		
 		// Get the final automaton and determine whether or not it reduced to
 		// void. If it did, then we have a subtype. Otherwise, we don't. 
 		List<Rewrite.State> states = rewrite.states();		
@@ -51,7 +51,7 @@ public class RewritingSubtypeOperator {
 		//
 		int root = reducedAutomaton.getRoot(0);
 		// Check whether the root state is void or not
-		return reducedAutomaton.get(root).kind == Types.K_Void;
+		return reducedAutomaton.get(root).kind == TypesOptimised.K_Void;
 	}
 	
 	/**
@@ -84,7 +84,7 @@ public class RewritingSubtypeOperator {
 	}
 	
 	public static void print(Automaton automaton) {
-		PrettyAutomataWriter writer = new PrettyAutomataWriter(System.out, Types.SCHEMA);
+		PrettyAutomataWriter writer = new PrettyAutomataWriter(System.out, TypesOptimised.SCHEMA);
 		try {
 			writer.write(automaton);
 			writer.flush();
@@ -104,20 +104,20 @@ public class RewritingSubtypeOperator {
 	private static Automaton toAutomaton(SyntacticType type) {
 		Automaton automaton = new Automaton();
 		int root = toAutomaton(type, automaton);
-		root = Types.Root(automaton, root);
+		root = TypesOptimised.Root(automaton, root);
 		automaton.setRoot(0, root);
 		return automaton;
 	}
 
 	private static int toAutomaton(SyntacticType type, Automaton automaton) {
 		if (type instanceof SyntacticType.Int) {
-			return automaton.add(Types.Int);
+			return automaton.add(TypesOptimised.Int);
 		} else if (type instanceof SyntacticType.Any) {
-			return automaton.add(Types.Any);
+			return automaton.add(TypesOptimised.Any);
 		} else if (type instanceof SyntacticType.Negation) {
 			SyntacticType.Negation neg = (SyntacticType.Negation) type;
 			int element = toAutomaton(neg.getElement(), automaton);
-			return Types.Not(automaton, element);
+			return TypesOptimised.Not(automaton, element);
 		} else if (type instanceof SyntacticType.Tuple) {
 			SyntacticType.Tuple tuple = (SyntacticType.Tuple) type;
 			SyntacticType[] elements = tuple.getElements();
@@ -125,7 +125,7 @@ public class RewritingSubtypeOperator {
 			for (int i = 0; i != elements.length; ++i) {
 				children[i] = toAutomaton(elements[i], automaton);
 			}
-			return Types.Tuple(automaton, children);
+			return TypesOptimised.Tuple(automaton, children);
 		} else if (type instanceof SyntacticType.Union) {
 			SyntacticType.Union union = (SyntacticType.Union) type;
 			SyntacticType[] elements = union.getElements();
@@ -133,7 +133,7 @@ public class RewritingSubtypeOperator {
 			for (int i = 0; i != elements.length; ++i) {
 				children[i] = toAutomaton(elements[i], automaton);
 			}
-			return Types.Or(automaton, children);
+			return TypesOptimised.Or(automaton, children);
 		} else {
 			SyntacticType.Intersection intersection = (SyntacticType.Intersection) type;
 			SyntacticType[] elements = intersection.getElements();
@@ -141,7 +141,7 @@ public class RewritingSubtypeOperator {
 			for (int i = 0; i != elements.length; ++i) {
 				children[i] = toAutomaton(elements[i], automaton);
 			}
-			return Types.And(automaton, children);
+			return TypesOptimised.And(automaton, children);
 		}
 	}
 }
