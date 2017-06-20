@@ -120,10 +120,10 @@ public class TestSuiteGenerator {
 		// rewrite-based operator disagrees we must then manualy inspect to
 		// determine which is correct.
 		
-//		Set<Value> supset = computeSemanticSet(sup, domain);
-//		Set<Value> subset = computeSemanticSet(sub, domain);
-//		return isSupset(supset,subset);
-		return WhileySubtypeOperator.isSubtype(sup, sub);
+		Set<Value> supset = computeSemanticSet(sup, domain);
+		Set<Value> subset = computeSemanticSet(sub, domain);
+		return isSupset(supset,subset);
+//		return WhileySubtypeOperator.isSubtype(sup, sub);
 	}
 
 	/**
@@ -308,7 +308,8 @@ public class TestSuiteGenerator {
 		TypeGenerator typeGen = new TypeGenerator(depth, width);
 		ArrayList<SyntacticType> types = selectRandomElements(typeGen,cardinality);
 		ArrayList<Value> domain = new ArrayList<Value>();
-		//generateDomain(depth+1,width+1,domain);
+		generateDomain(depth+1,width+1,domain);
+		System.err.println("CONSTRUCTED DOMAIN: " + domain.size());
 //		System.err.println("COMPUTED DOMAIN: " + domain.size());
 //		System.err.println("REDUCED DOMAIN: " + new HashSet<Value>(domain).size());
 //		SyntacticType sup = AbstractTestSuite.parse("!!int");
@@ -325,6 +326,6 @@ public class TestSuiteGenerator {
 	}
 	
 	public static void main(String[] args) {
-		run(3,2,100);
+		run(2,2,100);
 	}
 }

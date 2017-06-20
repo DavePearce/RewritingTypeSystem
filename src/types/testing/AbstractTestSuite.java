@@ -24,7 +24,7 @@ public class AbstractTestSuite {
 		if (rewriting) {
 			if (!RewritingSubtypeOperator.isSubtype(sup, sub)) {
 				//System.out.println("*** ERROR: !(" + sup + ":>" + sub + ")");
-				//fail("should be subtypes (rewriting operator)");
+				fail("should be subtypes (rewriting operator)");
 			}
 		} else {
 			if (!WhileySubtypeOperator.isSubtype(sup, sub)) {
@@ -37,7 +37,7 @@ public class AbstractTestSuite {
 		if(rewriting) {
 			if (RewritingSubtypeOperator.isSubtype(sup, sub)) {
 				//System.out.println("*** ERROR: " + sup + ":>" + sub);
-				//fail("should not be subtypes (rewriting operator)");
+				fail("should not be subtypes (rewriting operator)");
 			}
 		} else {
 			if (WhileySubtypeOperator.isSubtype(sup, sub)) {
