@@ -3,7 +3,9 @@ package types.testing;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 
+import types.core.RewritingSubtypeQuery;
 import types.core.SyntacticType;
+import types.core.WhileySubtypeQuery;
 import types.io.Parser;
 
 import org.junit.Test;
@@ -11,7 +13,7 @@ import org.junit.Test;
 /**
  * A set of hand-written simple tests mainly used during development of the
  * framework itself.
- * 
+ *
  * @author David J. Pearce
  *
  */
@@ -21,130 +23,130 @@ public class ManualTestSuite extends AbstractTestSuite {
 	// =======================================================
 	// Primitives
 	// =======================================================
-	
+
 	@Test
 	public void test_01() {
 		testValid("int","int");
 	}
-	
+
 	@Test
 	public void test_02() {
 		testValid("any","any");
 	}
-	
+
 	@Test
 	public void test_03() {
 		testValid("any","int");
 	}
-	
+
 	@Test
 	public void test_04() {
 		testInvalid("int","any");
 	}
-	
+
 	// =======================================================
 	// Tuples
 	// =======================================================
-	
+
 	@Test
 	public void test_05() {
 		testInvalid("int","{int}");
 	}
-	
+
 	@Test
 	public void test_06() {
 		testInvalid("{int}","int");
 	}
-	
+
 	@Test
 	public void test_07() {
 		testValid("any","{int}");
 	}
-	
+
 	@Test
 	public void test_08() {
 		testInvalid("{int}","any");
 	}
-	
+
 	@Test
 	public void test_09() {
 		testValid("{int}","{int}");
 	}
-	
+
 	@Test
 	public void test_10() {
 		testValid("{any}","{any}");
 	}
-	
+
 	@Test
 	public void test_11() {
 		testValid("{int,int}","{int,int}");
 	}
-	
+
 	@Test
 	public void test_12() {
 		testValid("{any,int}","{any,int}");
 	}
-	
+
 	@Test
 	public void test_13() {
 		testValid("{int,any}","{int,any}");
 	}
-	
+
 	@Test
 	public void test_14() {
 		testValid("{any,any}","{any,any}");
 	}
-	
+
 	@Test
 	public void test_15() {
 		testInvalid("{int,int}","{any,int}");
 	}
-	
+
 	@Test
 	public void test_16() {
 		testValid("{any,int}","{int,int}");
 	}
-	
+
 	@Test
 	public void test_17() {
 		testInvalid("{int,int}","{int,any}");
 	}
-	
+
 	@Test
 	public void test_18() {
 		testValid("{int,any}","{int,int}");
 	}
-	
+
 	@Test
 	public void test_19() {
 		testValid("{any,any}","{int,int}");
 	}
-	
+
 	// =======================================================
 	// Negations
 	// =======================================================
-	
+
 	@Test
 	public void test_20() {
 		testValid("!int","!int");
 	}
-	
+
 	@Test
 	public void test_21() {
 		testInvalid("!any","!int");
 	}
-	
+
 	@Test
 	public void test_22() {
 		testValid("!int","!any");
 	}
-	
+
 	@Test
 	public void test_23() {
 		testValid("!any","!any");
 	}
-	
+
 	// =======================================================
 	// Unions
 	// =======================================================
@@ -180,7 +182,7 @@ public class ManualTestSuite extends AbstractTestSuite {
 	public void test_31() {
 		testValid("{int|{int}}","{{int}}");
 	}
-	
+
 	// =======================================================
 	// Intersections
 	// =======================================================
@@ -216,41 +218,41 @@ public class ManualTestSuite extends AbstractTestSuite {
 	public void test_39() {
 		testInvalid("{int&{int}}","{{int}}");
 	}
-	
+
 	@Test
 	public void test_40() {
 		testValid("int","({any, int} & int & int)");
 	}
-	
+
 	// =======================================================
 	// Misc
 	// =======================================================
-	
+
 	@Test
 	public void test_41() {
 		testValid("!(int | any)","((int & any) & {any, any})");
 	}
-	
+
 	@Test
 	public void test_42() {
 		testValid("(!any | !any)","!any");
 	}
-	
+
 	@Test
 	public void test_43() {
 		testValid("!any","(!any | !any)");
 	}
-	
+
 	@Test
 	public void test_44() {
 		testValid("any","(!any | !any)");
 	}
-	
+
 	@Test
 	public void test_45() {
 		testValid("int","(!any | !any)");
 	}
-	
+
 	@Test
 	public void test_46() {
 		testInvalid("(!any | !any)","any");
@@ -259,16 +261,18 @@ public class ManualTestSuite extends AbstractTestSuite {
 	// =======================================================
 	// Misc
 	// =======================================================
-	
+
 	public static void testValid(String supertype, String subtype) {
 		SyntacticType sup = parse(supertype);
 		SyntacticType sub = parse(subtype);
-		testValid(sup,sub);
+		testValid(new WhileySubtypeQuery(sup,sub));
+		testValid(new RewritingSubtypeQuery(sup,sub));
 	}
-	
+
 	public static void testInvalid(String supertype, String subtype) {
 		SyntacticType sup = parse(supertype);
 		SyntacticType sub = parse(subtype);
-		testInvalid(sup,sub);
+		testInvalid(new WhileySubtypeQuery(sup,sub));
+		testInvalid(new RewritingSubtypeQuery(sup,sub));
 	}
 }

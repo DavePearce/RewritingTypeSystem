@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import types.core.RewritingSubtypeOperator;
+import types.core.RewritingSubtypeQuery;
 import types.testing.AbstractTestSuite;
 
 public class TestSuiteRewriteStats {
@@ -14,20 +14,20 @@ public class TestSuiteRewriteStats {
 		if(args.length == 0) {
 			System.out.println("usage: TestSuiteRewriteStats TestSuiteClass");
 			System.exit(1);
-		}	
+		}
 		String className = args[0];
 		try {
 			Class<? extends AbstractTestSuite> suiteClass = (Class<? extends AbstractTestSuite>) Class.forName(className);
 			List<Method> testCases = findTestCases(suiteClass,className);
-			List<Object> testInstances = new ArrayList<Object>();
+			List<Object> testInstances = new ArrayList<>();
 			// Create class instances
 			for(Method m : testCases) {
 				testInstances.add(m.getDeclaringClass().newInstance());
 			}
-			long[] rewrites = new long[testCases.size()];			
-			
+			long[] rewrites = new long[testCases.size()];
+
 			for(int i=0;i!=testCases.size();++i) {
-				rewrites[i] = runExperiment(testInstances.get(i),testCases.get(i));				
+				rewrites[i] = runExperiment(testInstances.get(i),testCases.get(i));
 			}
 			System.out.println("Command-Line Options: " + Arrays.toString(args));
 			System.out.println("Total rewrites: " + total(rewrites) + " rewrites");
@@ -49,16 +49,16 @@ public class TestSuiteRewriteStats {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static double round (double value, int precision) {
 		int scale = (int) Math.pow(10, precision);
 		return (double) Math.round(value * scale) / scale;
 	}
-	
-	private static double average(long[] data) {		
+
+	private static double average(long[] data) {
 		return total(data) / data.length;
 	}
-	
+
 	private static long total(long[] data) {
 		long sum = 0;
 		for(long t : data) {
@@ -66,7 +66,7 @@ public class TestSuiteRewriteStats {
 		}
 		return sum;
 	}
-	
+
 	private static double standardDeviation(long[] timings) {
 		double mean = average(timings);
 		double u2sum = 0d;
@@ -77,10 +77,10 @@ public class TestSuiteRewriteStats {
 		double u2mean = u2sum / timings.length;
 		return Math.sqrt(u2mean);
 	}
-	
+
 
 	private static List<Method> findTestCases(Class<?> suite, String className) throws ClassNotFoundException {
-		ArrayList<Method> methods = new ArrayList<Method>();
+		ArrayList<Method> methods = new ArrayList<>();
 		for(Class<?> inner : suite.getClasses()) {
 			for(Method m : inner.getDeclaredMethods()) {
 				if(m.getName().startsWith("test_")) {
@@ -90,12 +90,12 @@ public class TestSuiteRewriteStats {
 		}
 		return methods;
 	}
-	
-	
+
+
 	private static long runExperiment(Object suite, Method testCase) {
 		try {
 			testCase.invoke(suite);
-			return RewritingSubtypeOperator.numRewrites;
+			return RewritingSubtypeQuery.numRewrites;
 		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);

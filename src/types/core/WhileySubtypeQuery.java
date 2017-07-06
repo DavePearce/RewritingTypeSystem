@@ -7,26 +7,36 @@ import java.util.Map;
 /**
  * Provides an implementation of subtyping based on the rewrite rules found in
  * Types.wyrl.
- * 
+ *
  * @author David J. Pearce
  *
  */
-public class WhileySubtypeOperator {
+public final class WhileySubtypeQuery implements SubtypeQuery {
+	private final wyil.lang.Type whileySuperType;
+	private final wyil.lang.Type whileySubType;
+	private boolean result;
 
-	/**
-	 * Test whether one type is a super type of another.
-	 * 
-	 * @param sup
-	 * @param sub
-	 * @return
-	 * @throws IOException 
-	 */
-	public static boolean isSubtype(SyntacticType sup, SyntacticType sub)  {
+	public WhileySubtypeQuery(SyntacticType sup, SyntacticType sub) {
+		this.whileySuperType = toWhileyType(sup);
+		this.whileySubType = toWhileyType(sub);
+	}
+
+	@Override
+	public void exec()  {
+		this.result = wyil.lang.Type.isSubtype(whileySuperType, whileySubType);
+	}
+
+	@Override
+	public boolean result() {
+		return result;
+	}
+
+	public static boolean isSubtype(SyntacticType sup, SyntacticType sub) {
 		wyil.lang.Type whileySuperType = toWhileyType(sup);
 		wyil.lang.Type whileySubType = toWhileyType(sub);
 		return wyil.lang.Type.isSubtype(whileySuperType, whileySubType);
 	}
-	
+
 	public static wyil.lang.Type toWhileyType(SyntacticType type) {
 		if (type instanceof SyntacticType.Int) {
 			return wyil.lang.Type.T_INT;

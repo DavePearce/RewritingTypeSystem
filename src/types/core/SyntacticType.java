@@ -6,39 +6,45 @@ import java.util.Arrays;
  * Provides a simple representation of types as classes. This is essentially an
  * Abstract Syntax Tree from which we can generate the appropriate forms for the
  * two implementations (e.g. WyRL automata).
- * 
+ *
  * @author David J. Pearce
  *
  */
 public abstract class SyntacticType {
-	
+
 	/**
 	 * A singleton object representing the primitive integer type
 	 */
 	public static final Int Int = new Int();
-	
+
 	/**
 	 * A singleton object representing the primitive any type
 	 */
 	public static final Any Any = new Any();
-	
+
+	/**
+	 * A singleton object representing the primitive void type
+	 */
+	public static final SyntacticType Void = new Negation(Any);
+
 	/**
 	 * Determine whether this type accepts a give value or not. This defines the
 	 * meaning of types in terms of a semantic interpretation.
-	 * 
+	 *
 	 * @param v
 	 * @return
 	 */
 	public abstract boolean accepts(Value v);
-	
+
 	/**
 	 * Represents the primitive integer type
-	 * 
+	 *
 	 * @author David J. Pearce
 	 *
 	 */
 	public static class Int extends SyntacticType {
 		private Int() {}
+		@Override
 		public String toString() {
 			return "int";
 		}
@@ -47,16 +53,17 @@ public abstract class SyntacticType {
 			return v instanceof Value.Int;
 		}
 	}
-	
+
 	/**
 	 * Represents the primitive any type
-	 * 
+	 *
 	 * @author David J. Pearce
 	 *
 	 */
 	public static class Any extends SyntacticType {
 		private Any() {}
-		
+
+		@Override
 		public String toString() {
 			return "any";
 		}
@@ -66,24 +73,25 @@ public abstract class SyntacticType {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Represents the negation type
-	 * 
+	 *
 	 * @author David J. Pearce
 	 *
 	 */
 	public static class Negation extends SyntacticType {
 		private SyntacticType element;
-		
+
 		public Negation(SyntacticType element) {
 			this.element = element;
 		}
-		
+
 		public SyntacticType getElement() {
 			return element;
 		}
-		
+
+		@Override
 		public boolean equals(Object o) {
 			if(o instanceof Negation) {
 				Negation n = (Negation) o;
@@ -91,11 +99,13 @@ public abstract class SyntacticType {
 			}
 			return false;
 		}
-		
+
+		@Override
 		public int hashCode() {
 			return element.hashCode();
 		}
-		
+
+		@Override
 		public String toString() {
 			return "!" + element;
 		}
@@ -105,24 +115,25 @@ public abstract class SyntacticType {
 			return !element.accepts(v);
 		}
 	}
-	
+
 	/**
 	 * Represents the compound tuple type
-	 * 
+	 *
 	 * @author David J. Pearce
 	 *
 	 */
 	public static class Tuple extends SyntacticType {
 		private SyntacticType[] elements;
-		
+
 		public Tuple(SyntacticType... elements) {
 			this.elements = elements;
 		}
-		
+
 		public SyntacticType[] getElements() {
 			return elements;
 		}
-		
+
+		@Override
 		public boolean equals(Object o) {
 			if(o instanceof Tuple) {
 				Tuple t = (Tuple) o;
@@ -130,11 +141,13 @@ public abstract class SyntacticType {
 			}
 			return false;
 		}
-		
+
+		@Override
 		public int hashCode() {
 			return Arrays.hashCode(elements);
 		}
-		
+
+		@Override
 		public String toString() {
 			String r = "{";
 			for(int i=0;i!=elements.length;++i) {
@@ -162,10 +175,10 @@ public abstract class SyntacticType {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Represents the compound intersection type
-	 * 
+	 *
 	 * @author David J. Pearce
 	 *
 	 */
@@ -179,7 +192,8 @@ public abstract class SyntacticType {
 		public SyntacticType[] getElements() {
 			return elements;
 		}
-		
+
+		@Override
 		public boolean equals(Object o) {
 			if(o instanceof Intersection) {
 				Intersection t = (Intersection) o;
@@ -187,10 +201,12 @@ public abstract class SyntacticType {
 			}
 			return false;
 		}
-		
+
+		@Override
 		public int hashCode() {
 			return Arrays.hashCode(elements);
 		}
+		@Override
 		public String toString() {
 			String r = "(";
 			for (int i = 0; i != elements.length; ++i) {
@@ -212,10 +228,10 @@ public abstract class SyntacticType {
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Represents the compound union type
-	 * 
+	 *
 	 * @author David J. Pearce
 	 *
 	 */
@@ -229,7 +245,8 @@ public abstract class SyntacticType {
 		public SyntacticType[] getElements() {
 			return elements;
 		}
-		
+
+		@Override
 		public boolean equals(Object o) {
 			if(o instanceof Union) {
 				Union t = (Union) o;
@@ -237,10 +254,12 @@ public abstract class SyntacticType {
 			}
 			return false;
 		}
-		
+
+		@Override
 		public int hashCode() {
 			return Arrays.hashCode(elements);
 		}
+		@Override
 		public String toString() {
 			String r = "(";
 			for (int i = 0; i != elements.length; ++i) {

@@ -4,8 +4,8 @@ JAVA_CMD="java -cp tests/:src/:lib/wyrl-v0.4.6.jar:lib/wyil-all-v0.3.40.jar:lib/
 
 $JAVA_CMD types.util.TestSuiteRunner $1 $2
 
-# $JAVA_CMD types.util.TestSuiteRewriteStats $1
+#$JAVA_CMD types.util.TestSuiteRewriteStats $1
 
-# $JAVA_CMD types.util.TestSuiteGenerator
+#$JAVA_CMD -Xms4G types.util.TestSuiteGenerator
 
 

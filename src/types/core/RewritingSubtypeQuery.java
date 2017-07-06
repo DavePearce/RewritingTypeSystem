@@ -13,51 +13,68 @@ import wyrw.util.*;
 /**
  * Provides an implementation of subtyping based on the rewrite rules found in
  * TypesOptimised.wyrl.
- * 
+ *
  * @author David J. Pearce
  *
  */
-public class RewritingSubtypeOperator {
-
+public class RewritingSubtypeQuery implements SubtypeQuery {
 	/**
 	 * This records the number of rewrites for the last call to isSubtype. This
 	 * is used to report rewriting statistics.
 	 */
 	public static int numRewrites;
-	
+
+	/**
+	 * Responsible for holding the rewrite space
+	 */
+	private Reduction rewrite;
+
+	/**
+	 * The actual rewriter responsible for rewriting the automaton
+	 */
+	private Rewriter rewriter;
+
+	public RewritingSubtypeQuery(SyntacticType sup, SyntacticType sub) {
+		SyntacticType res = new SyntacticType.Intersection(sub, new SyntacticType.Negation(sup));
+		Automaton automaton = toAutomaton(res);
+		rewrite = new Reduction(TypesOptimised.SCHEMA, null, TypesOptimised.reductions);
+		rewriter = new LinearRewriter(rewrite, LinearRewriter.UNFAIR_HEURISTIC);
+		rewrite.initialise(automaton);
+	}
+
 	/**
 	 * Test whether one type is a super type of another.
-	 * 
+	 *
 	 * @param sup
 	 * @param sub
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public static boolean isSubtype(SyntacticType sup, SyntacticType sub)  {
-		SyntacticType res = new SyntacticType.Intersection(sub, new SyntacticType.Negation(sup));
-		Automaton automaton = toAutomaton(res);
-		Reduction rewrite = new Reduction(TypesOptimised.SCHEMA, null, TypesOptimised.reductions);
-		Rewriter rewriter = new LinearRewriter(rewrite, LinearRewriter.UNFAIR_HEURISTIC);
-		rewrite.initialise(automaton);
+	@Override
+	public void exec()  {
 		// grind 10000 steps (if necessary)
 		rewriter.apply(10000);
-		//printReduction(rewrite,sup,sub);		
+	}
+
+	@Override
+	public boolean result() {
 		// Store stats
-		numRewrites = rewrite.steps().size();		
+		numRewrites = rewrite.steps().size();
 		// Get the final automaton and determine whether or not it reduced to
-		// void. If it did, then we have a subtype. Otherwise, we don't. 
-		List<Rewrite.State> states = rewrite.states();		
-		Automaton reducedAutomaton = states.get(states.size()-1).automaton();		
+		// void. If it did, then we have a subtype. Otherwise, we don't.
+		List<Rewrite.State> states = rewrite.states();
+		Automaton reducedAutomaton = states.get(states.size()-1).automaton();
 		//
 		int root = reducedAutomaton.getRoot(0);
 		// Check whether the root state is void or not
 		return reducedAutomaton.get(root).kind == TypesOptimised.K_Void;
 	}
-	
+
+
 	/**
 	 * This is useful for debugging purposes. It prints out the full reduction
 	 * that took place. This helps to know why a rule did or did not apply.
-	 * 
+	 *
 	 * @param rewrite
 	 */
 	public static void printReduction(Rewrite rewrite,SyntacticType sup, SyntacticType sub) {
@@ -77,12 +94,12 @@ public class RewritingSubtypeOperator {
 		print(automaton);
 		System.out.println();
 	}
-	
+
 	public static void println(int root, Automaton automaton) {
 		print(root,automaton);
 		System.out.println();
 	}
-	
+
 	public static void print(Automaton automaton) {
 		PrettyAutomataWriter writer = new PrettyAutomataWriter(System.out, TypesOptimised.SCHEMA);
 		try {
@@ -94,7 +111,7 @@ public class RewritingSubtypeOperator {
 	}
 
 	public static void print(int root, Automaton automaton) {
-		List<Automaton.State> states = new ArrayList<Automaton.State>();
+		List<Automaton.State> states = new ArrayList<>();
 		root = Automata.extract(automaton, root, states);
 		Automaton subaut = new Automaton(states.toArray(new Automaton.State[states.size()]));
 		subaut.setRoot(0, root);

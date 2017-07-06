@@ -9,9 +9,9 @@ import java.util.List;
 import types.testing.AbstractTestSuite;
 
 public class TestSuiteRunner {
-	private static final int NWARMUPS = 5; // number of warm-up runs to discard
-	private static final int NRUNS = 10; // number of runs to average over
-	
+	private static final int NWARMUPS = 25; // number of warm-up runs to discard
+	private static final int NRUNS = 50; // number of runs to average over
+
 	public static void main(String[] args) throws InstantiationException, IllegalAccessException {
 		boolean rewriting;
 		if(args.length == 0) {
@@ -26,27 +26,27 @@ public class TestSuiteRunner {
 			System.out.println("usage: TestSuiteRunner --(rewriting|whiley) TestSuiteClass");
 			System.exit(1);
 			return;
-		}		
+		}
 		String className = args[1];
 		try {
 			Class<? extends AbstractTestSuite> suiteClass = (Class<? extends AbstractTestSuite>) Class.forName(className);
 			AbstractTestSuite.rewriting = rewriting;
 			List<Method> testCases = findTestCases(suiteClass,className);
-			List<Object> testInstances = new ArrayList<Object>();
+			List<Object> testInstances = new ArrayList<>();
 			// Create class instances
 			for(Method m : testCases) {
 				testInstances.add(m.getDeclaringClass().newInstance());
 			}
-			long[] totals = new long[NRUNS];			
+			long[] totals = new long[NRUNS];
 			long warmupStart = System.currentTimeMillis();
 			for(int i=0;i!=NWARMUPS;++i)  {
 				runExperiment(testInstances,testCases);
 			}
 			long runsStart = System.currentTimeMillis();
 			for(int i=0;i!=NRUNS;++i) {
-				long start = System.currentTimeMillis();
+				long start = System.nanoTime();
 				runExperiment(testInstances,testCases);
-				long end = System.currentTimeMillis();
+				long end = System.nanoTime();
 				totals[i] = end - start;
 				System.gc();
 			}
@@ -57,8 +57,8 @@ public class TestSuiteRunner {
 			System.out.println("Total run time: " + (finish-runsStart) + "ms");
 			double mean = average(totals);
 			double stddev = standardDeviation(totals);
-			System.out.println("Mean run time: " + round(mean,2) + "ms");
-			System.out.println("Standard deviation: " + round(stddev,2) + "ms");
+			System.out.println("Mean run time: " + round(mean,2) + "ns (" + (finish-runsStart)/NRUNS +"ms)");
+			System.out.println("Standard deviation: " + round(stddev,2) + "ns");
 			System.out.println("Coefficiant of Variation: " + round(stddev/mean,2));
 			System.out.print("Runs: [");
 			for(int i=0;i!=totals.length;++i) {
@@ -73,12 +73,12 @@ public class TestSuiteRunner {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static double round (double value, int precision) {
 		int scale = (int) Math.pow(10, precision);
 		return (double) Math.round(value * scale) / scale;
 	}
-	
+
 	private static double average(long[] timings) {
 		double r = 0;
 		for(long t : timings) {
@@ -86,7 +86,7 @@ public class TestSuiteRunner {
 		}
 		return r / timings.length;
 	}
-	
+
 	private static double standardDeviation(long[] timings) {
 		double mean = average(timings);
 		double u2sum = 0d;
@@ -97,9 +97,9 @@ public class TestSuiteRunner {
 		double u2mean = u2sum / timings.length;
 		return Math.sqrt(u2mean);
 	}
-	
+
 	private static List<Method> findTestCases(Class<?> suite, String className) throws ClassNotFoundException {
-		ArrayList<Method> methods = new ArrayList<Method>();
+		ArrayList<Method> methods = new ArrayList<>();
 		for(Class<?> inner : suite.getClasses()) {
 			for(Method m : inner.getDeclaredMethods()) {
 				if(m.getName().startsWith("test_")) {
@@ -109,13 +109,13 @@ public class TestSuiteRunner {
 		}
 		return methods;
 	}
-	
+
 	private static void runExperiment(List<Object> testInstances, List<Method> testCases) {
 		for(int i=0;i!=testCases.size();++i) {
 			runMethod(testInstances.get(i),testCases.get(i));
 		}
 	}
-	
+
 	private static void runMethod(Object testInstance, Method testCase) {
 		try {
 			testCase.invoke(testInstance);

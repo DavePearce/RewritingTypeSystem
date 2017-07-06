@@ -3,7 +3,9 @@ import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Test;
 import types.testing.AbstractTestSuite;
+import types.core.RewritingSubtypeQuery;
 import types.core.SyntacticType;
+import types.core.WhileySubtypeQuery;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TypeSpace_2_1 extends AbstractTestSuite {
@@ -684,5 +686,14 @@ public class TypeSpace_2_1 extends AbstractTestSuite {
 		private static final SyntacticType test_168_sub = parse("!!int");
 		@Test public void test_168() { testValid(test_168_sup,test_168_sub); }
 
+		public static void testValid(SyntacticType sup, SyntacticType sub) {
+			AbstractTestSuite.testValid(new WhileySubtypeQuery(sup,sub));
+			AbstractTestSuite.testValid(new RewritingSubtypeQuery(sup,sub));
+		}
+
+		public static void testInvalid(SyntacticType sup, SyntacticType sub) {
+			AbstractTestSuite.testInvalid(new WhileySubtypeQuery(sup,sub));
+			AbstractTestSuite.testInvalid(new RewritingSubtypeQuery(sup,sub));
+		}
 	}
 }

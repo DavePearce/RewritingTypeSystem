@@ -14,7 +14,7 @@ import org.junit.runners.MethodSorters;
 
 import types.core.SyntacticType;
 import types.core.Value;
-import types.core.WhileySubtypeOperator;
+import types.core.WhileySubtypeQuery;
 import types.testing.AbstractTestSuite;
 
 /**
@@ -22,7 +22,7 @@ import types.testing.AbstractTestSuite;
  * given type generator, and generates every pair of types as subtype tests. The
  * trick is that it must also determine which are valid subtype tests and which
  * are not.
- * 
+ *
  * @author David J. Pearce
  *
  */
@@ -41,7 +41,7 @@ public class TestSuiteGenerator {
 
 	public void run() {
 		// First, generate the list of types
-		//stripInvalidTypes(types);
+		// stripInvalidTypes(types);
 		//
 		printPreamble();
 		int count = 0;
@@ -81,25 +81,23 @@ public class TestSuiteGenerator {
 		System.out.println("import org.junit.Test;");
 		System.out.println("import types.testing.AbstractTestSuite;");
 		System.out.println("import types.core.SyntacticType;");
+		System.out.println("import types.core.SubtypeQuery;");
 		System.out.println();
 		System.out.println("@FixMethodOrder(MethodSorters.NAME_ASCENDING)");
 		System.out.println("public class " + className + " extends AbstractTestSuite {");
 	}
 
-	private void printValidTest(int id, SyntacticType sup, SyntacticType sub) {
-		String supName = "test_" + id + "_sup";
-		String subName = "test_" + id + "_sub";
-		System.out.println("\t\tprivate static final SyntacticType " + supName + " = parse(\"" + sup + "\");");
-		System.out.println("\t\tprivate static final SyntacticType " + subName + " = parse(\"" + sub + "\");");
-		System.out.println("\t\t@Test public void test_" + id + "() { testValid(" + supName + "," + subName + "); }\n");
+
+	private static void printValidTest(int id, SyntacticType sup, SyntacticType sub) {
+		String queryName = "test_" + id + "_query";
+		System.out.println("\t\tprivate static final SubtypeQuery " + queryName + " = createSubtypeQuery(parseWhiley(\"" + sup + "\"),parseWhiley(\"" + sub + "\"));");
+		System.out.println("\t\t@Test public void test_" + id + "() { testValid(" + queryName + "); }\n");
 	}
 
-	private void printInvalidTest(int id, SyntacticType sup, SyntacticType sub) {
-		String supName = "test_" + id + "_sup";
-		String subName = "test_" + id + "_sub";
-		System.out.println("\t\tprivate static final SyntacticType " + supName + " = parse(\"" + sup + "\");");
-		System.out.println("\t\tprivate static final SyntacticType " + subName + " = parse(\"" + sub + "\");");
-		System.out.println("\t\t@Test public void test_" + id + "() { testInvalid(" + supName + "," + subName + "); }\n");
+	private static void printInvalidTest(int id, SyntacticType sup, SyntacticType sub) {
+		String queryName = "test_" + id + "_query";
+		System.out.println("\t\tprivate static final SubtypeQuery " + queryName + " = createSubtypeQuery(parseWhiley(\"" + sup + "\"),parseWhiley(\"" + sub + "\"));");
+		System.out.println("\t\t@Test public void test_" + id + "() { testInvalid(" + queryName + "); }\n");
 	}
 
 	private void printPostamble() {
@@ -119,16 +117,16 @@ public class TestSuiteGenerator {
 		// tested and assumed to be largely correct. In cases where the
 		// rewrite-based operator disagrees we must then manualy inspect to
 		// determine which is correct.
-		
-		Set<Value> supset = computeSemanticSet(sup, domain);
-		Set<Value> subset = computeSemanticSet(sub, domain);
-		return isSupset(supset,subset);
-//		return WhileySubtypeOperator.isSubtype(sup, sub);
+
+//		Set<Value> supset = computeSemanticSet(sup, domain);
+//		Set<Value> subset = computeSemanticSet(sub, domain);
+//		return isSupset(supset,subset);
+		return WhileySubtypeQuery.isSubtype(sup, sub);
 	}
 
 	/**
 	 * Determine whether one value set is a super set of another.
-	 * 
+	 *
 	 * @param superSet
 	 * @param supSet
 	 */
@@ -140,9 +138,9 @@ public class TestSuiteGenerator {
 		}
 		return true;
 	}
-	
+
 	private static Set<Value> computeSemanticSet(SyntacticType t, ArrayList<Value> domain) {
-		HashSet<Value> result = new HashSet<Value>();
+		HashSet<Value> result = new HashSet<>();
 		for(int i=0;i!=domain.size();++i) {
 			Value v = domain.get(i);
 			if(t.accepts(v)) {
@@ -151,19 +149,19 @@ public class TestSuiteGenerator {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Strip out any types which are "invalid". For example, the type {!any} is
 	 * considered invalid by the Whiley subtype operator because it is
 	 * equivalent to void. It's slightly annoying that we have to do this, but's
 	 * an artifact of the way types are currently constructed in Whiley.
-	 * 
+	 *
 	 * @param types
 	 */
 	private void stripInvalidTypes(List<SyntacticType> types) {
 		for (int i = 0; i != types.size(); ++i) {
 			try {
-				WhileySubtypeOperator.toWhileyType(types.get(i));
+				WhileySubtypeQuery.toWhileyType(types.get(i));
 			} catch (Exception e) {
 				types.remove(i--);
 			}
@@ -174,11 +172,11 @@ public class TestSuiteGenerator {
 		Collections.shuffle(types);
 		return types.subList(0, n);
 	}
-	
+
 	/**
 	 * Select n elements chosen uniformly at random from a given iteration
 	 * space.
-	 * 
+	 *
 	 * @param t
 	 * @param n
 	 * @return
@@ -186,7 +184,7 @@ public class TestSuiteGenerator {
 	public static ArrayList<SyntacticType> selectRandomElements(TypeGenerator generator, int n) {
 		long space = generator.size();
 		TypeGenerator.Iterator iter = generator.iterator();
-		ArrayList<SyntacticType> types = new ArrayList<SyntacticType>();
+		ArrayList<SyntacticType> types = new ArrayList<>();
 		Random rand = new Random();
 		while (types.size() < n && iter.hasNext()) {
 			if (choose(rand, space, n)) {
@@ -204,7 +202,7 @@ public class TestSuiteGenerator {
 	 * choose; otherwise, return false. This method has to deal with the fact
 	 * that the space is a long, and Random is not so good for generating random
 	 * long numbers.
-	 * 
+	 *
 	 * @param rand
 	 * @param space
 	 * @param n
@@ -222,7 +220,7 @@ public class TestSuiteGenerator {
 			return p < n;
 		}
 	}
-	
+
 	public static void generateDomain(int depth, int width, ArrayList<Value> result) {
 		if(depth == 0) {
 			// Add a token integer.  One is actually enough.
@@ -230,12 +228,12 @@ public class TestSuiteGenerator {
 		} else {
 			generateDomain(depth-1, width, result);
 			int depth_m1 = result.size();
-			for(int w=1;w<=width;++w) {				
+			for(int w=1;w<=width;++w) {
 				genAllPermutations(w,depth_m1,result);
 			}
 		}
 	}
-	
+
 	public static void genAllPermutations(int width, int end, ArrayList<Value> values) {
 		if(width == 1) {
 			for(int i=0;i<end;++i) {
@@ -251,21 +249,21 @@ public class TestSuiteGenerator {
 				}
 				values.add(new Value.Tuple(vs));
 				c.increment();
-			}			
+			}
 		}
 	}
-	
+
 	public static class Counter {
 		private final int[] items;
 		private final int max;
-		
+
 		public Counter(int dim, int max) {
 			this.items = new int[dim];
 			this.max = max;
 		}
 		/**
 		 * The counter is finished when each dimension has reached the maximum value
-		 * 
+		 *
 		 * @param counter
 		 * @param max
 		 *            maximum value of any dimension
@@ -274,13 +272,13 @@ public class TestSuiteGenerator {
 		public boolean isFinished() {
 			return items[0] == -1;
 		}
-		
+
 		/**
 		 * To increment the counter we starting incrementing from the innermost
 		 * dimensions first. If a dimension has the maximum value, we roll it over
 		 * to zero and carry to the next dimension. Otherwise, we just increment the
 		 * given dimension by 1.
-		 * 
+		 *
 		 * @param counter
 		 * @param max
 		 *            maximum value of any dimension
@@ -298,18 +296,19 @@ public class TestSuiteGenerator {
 				items[i] = items[i] + 1;
 			}
 		}
-		
+
+		@Override
 		public String toString() {
 			return Arrays.toString(items);
 		}
 	}
-	
+
 	public static void run(int depth, int width, int cardinality) {
 		TypeGenerator typeGen = new TypeGenerator(depth, width);
 		ArrayList<SyntacticType> types = selectRandomElements(typeGen,cardinality);
-		ArrayList<Value> domain = new ArrayList<Value>();
-		generateDomain(depth+1,width+1,domain);
-		System.err.println("CONSTRUCTED DOMAIN: " + domain.size());
+		ArrayList<Value> domain = new ArrayList<>();
+//		generateDomain(depth+1,width+1,domain);
+//		System.err.println("CONSTRUCTED DOMAIN: " + domain.size());
 //		System.err.println("COMPUTED DOMAIN: " + domain.size());
 //		System.err.println("REDUCED DOMAIN: " + new HashSet<Value>(domain).size());
 //		SyntacticType sup = AbstractTestSuite.parse("!!int");
@@ -324,8 +323,8 @@ public class TestSuiteGenerator {
 		TestSuiteGenerator testGen = new TestSuiteGenerator(depth,width,types,domain);
 		testGen.run();
 	}
-	
+
 	public static void main(String[] args) {
-		run(2,2,100);
+		run(3,2,100);
 	}
 }

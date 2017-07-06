@@ -4,7 +4,9 @@ import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Test;
 import types.testing.AbstractTestSuite;
+import types.core.RewritingSubtypeQuery;
 import types.core.SyntacticType;
+import types.core.WhileySubtypeQuery;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TypeSpace_1_2 extends AbstractTestSuite {
@@ -3609,5 +3611,14 @@ public class TypeSpace_1_2 extends AbstractTestSuite {
 		private static final SyntacticType test_899_sub = parse("(int & int)");
 		@Test public void test_899() { testValid(test_899_sup,test_899_sub); }
 
+		public static void testValid(SyntacticType sup, SyntacticType sub) {
+			AbstractTestSuite.testValid(new WhileySubtypeQuery(sup,sub));
+			AbstractTestSuite.testValid(new RewritingSubtypeQuery(sup,sub));
+		}
+
+		public static void testInvalid(SyntacticType sup, SyntacticType sub) {
+			AbstractTestSuite.testInvalid(new WhileySubtypeQuery(sup,sub));
+			AbstractTestSuite.testInvalid(new RewritingSubtypeQuery(sup,sub));
+		}
 	}
 }
