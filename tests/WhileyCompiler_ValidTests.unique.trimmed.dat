@@ -1,0 +1,290 @@
+void :> int[]
+int :> int
+bool :> bool
+void :> int
+void :> any
+any :> int
+int[] :> int[]
+void :> bool
+bool :> int
+int :> bool
+void :> null|int[]
+void :> bool|int[]
+void :> null|int[]|bool|int[]
+void :> null|bool|int
+null|bool|int :> null|bool|int
+null|int[]|bool|int[] :> null|int[]|bool|int[]
+null|int[]|bool|int[] :> null|int[]
+null|bool|int :> int
+null|bool|int :> null
+null|int[]|bool|int[] :> int[]
+bool[] :> bool[]
+void :> bool[]
+void :> bool[][]
+bool[][] :> bool[][]
+{int code,bool flag} :> {int code,bool flag}
+void :> byte
+byte :> byte
+void :> bool|int
+bool|int :> bool
+bool|int :> int
+void :> {int data}
+void :> {int code,int data}
+{int data} :> {int data}
+{int code,int data} :> {int code,int data}
+{int data} :> {int code,int data}
+void :> {bool colour,int kind}
+void :> {int col,int row}
+void :> null|{bool colour,int kind}
+void :> null|{bool colour,int kind}[]
+void :> {bool blackCastleKingSide,bool blackCastleQueenSide,null|{bool colour,int kind}[][] rows,bool whiteCastleKingSide,bool whiteCastleQueenSide}
+{int col,int row} :> {int col,int row}
+{bool blackCastleKingSide,bool blackCastleQueenSide,null|{bool colour,int kind}[][] rows,bool whiteCastleKingSide,bool whiteCastleQueenSide} :> {bool blackCastleKingSide,bool blackCastleQueenSide,null[]|{bool colour,int kind}[][] rows,bool whiteCastleKingSide,bool whiteCastleQueenSide}
+void :> {{int col,int row} from,{bool colour,int kind} piece,{int col,int row} to}
+void :> {{int col,int row} from,{bool colour,int kind} piece,{bool colour,int kind} taken,{int col,int row} to}
+void :> {{int col,int row} from,{bool colour,int kind} piece,{int col,int row} to}|{{int col,int row} from,{bool colour,int kind} piece,{bool colour,int kind} taken,{int col,int row} to}
+void :> {bool isWhite,bool kingSide}
+{bool colour,int kind} :> {bool colour,int kind}
+int[] :> void
+void :> {int move,int[] pieces}
+{int move,int[] pieces} :> {int move,int[] pieces}
+void :> {int character,int from,int to}
+void :> {{int character,int from,int to}[] transitions}
+{int character,int from,int to}[] :> {int character,int from,int to}[]
+void :> {int character,int from,int to}[]
+{int character,int from,int to} :> {int character,int from,int to}
+{{int character,int from,int to}[] transitions} :> {{int character,int from,int to}[] transitions}
+void :> {int op,int[] payload}
+{int op,int[] payload} :> {int op,int[] payload}
+void :> {int[] input,int pos}
+{int[] input,int pos} :> {int[] input,int pos}
+void :> int[][]
+int[][] :> int[][]
+int[] :> int
+int :> int[]
+void :> {int op}
+{int op} :> {int op}
+void :> {int f}
+{int f} :> {int f}
+void :> {int index,int op}
+{int index,int op} :> {int index,int op}
+void :> {int x,int y}
+{int x,int y} :> {int x,int y}
+void :> {int[][] data,int height,int width}
+{int[][] data,int height,int width} :> {int[][] data,int height,int width}
+any :> any
+any :> null
+void :> {bool x,bool y}
+{bool x,bool y} :> {bool x,bool y}
+void :> null|bool
+void :> null|bool[]
+null|bool[] :> bool[]
+null|bool :> bool
+null|bool :> null
+null|bool[] :> null|bool[]
+null|bool[] :> null[]
+void :> null|int
+null|int :> int
+null|int :> null
+void :> null
+null :> null
+void :> {int value}
+{int value} :> {int value}
+void :> {int op,int s}
+{int op,int s} :> int[]
+bool[] :> int[]
+int[] :> bool[]
+{int op,int s} :> bool[]
+int[] :> bool
+bool :> int[]
+void :> {int flag}
+{int flag} :> {int flag}
+void :> {int nx,int ny}
+{int nx,int ny} :> {int nx,int ny}
+void :> {int data,null next}
+{int data,null next} :> {int data,null next}
+void :> byte[]
+byte[] :> byte[]
+void :> bool[]|int[]
+bool[]|int[] :> int[]
+bool[]|int[] :> bool[]
+bool :> bool|int
+null|int[] :> null
+null|int[] :> int[]
+null|int[] :> null|int[]
+void :> {bool[] items}
+{bool[] items} :> {bool[] items}
+void :> int|int[]
+void :> int|int[][]
+any :> int|int[][]
+int|int[][] :> int[]
+int|int[][] :> int[][]
+int|int[] :> int
+int|int[][] :> int|int[][]
+any :> int[]
+void :> {int[][] f1,int[][] f2}
+{int[][] f1,int[][] f2} :> {int[][] f1,int[][] f2}
+void :> {bool flag,{bool colour,int kind}[] rows}
+{bool flag,{bool colour,int kind}[] rows} :> {bool flag,{bool colour,int kind}[] rows}
+void :> null|int[][]
+null|int :> null|int
+null|int[][] :> null|int[][]
+null|int[][] :> int[][]
+void :> {int[] f1,int[] f2}
+{int[] f1,int[] f2} :> {int[] f1,int[] f2}
+void :> {bool b1,bool b2}[]
+{bool b1,bool b2}[] :> {bool b1,bool b2}[]
+{bool b1,bool b2} :> {bool b1,bool b2}
+void :> !null
+!null :> int
+!null :> !null
+!null :> int[]
+void :> !(null|int)
+!(null|int) :> int[]
+void :> {byte[] data,int maxLocals,int maxStack,int[] name}
+void :> {int[][] classes,int[] pkg}
+void :> int|{int[][] classes,int[] pkg}
+void :> {int offset,int op}
+void :> {int[] name,int offset,int op,{int[][] classes,int[] pkg} owner,{int[][] classes,int[] pkg}|int type}
+void :> {int offset,int op}|{int[] name,int offset,int op,{int[][] classes,int[] pkg} owner,{int[][] classes,int[] pkg}|int type}
+void :> {{int[] name,int offset,int op,{int[][] classes,int[] pkg} owner,{int[][] classes,int[] pkg}|int type}|{int offset,int op}[] data,int[] name}
+void :> {int x,int y,int z}
+void :> {int mode,int rest}
+{int mode,int rest} :> {int mode,int rest}
+void :> {int[] items,int length}
+any :> bool
+void :> {any data}
+void :> {int f1,int f2}
+{int f1,int f2} :> {int f1,int f2}
+void :> {int b1,int b2}
+{int b1,int b2} :> {int b1,int b2}
+void :> {null|int f}
+void :> {bool|int f}
+void :> {null|int f}|{bool|int f}
+{null|int f}|{bool|int f} :> {null|int f}|{bool|int f}
+{null|int f}|{bool|int f} :> {null f}
+{null|int f}|{bool|int f} :> {int f}
+void :> {int[] data,int wp}
+{int[] data,int wp} :> {int[] data,int wp}
+void :> {int x}
+void :> {{int x} current}
+{{int x} current} :> {{int x} current}
+{int x} :> {int x}
+{int x} :> {int x,int y}
+void :> {int x,int y}[]
+{int x,int y}[] :> {int x,int y}[]
+void :> {bool r}
+void :> {any r}
+{any r} :> {bool r}
+{bool r} :> {bool r}
+void :> {int[] id}
+void :> {int[] err}
+void :> {int off,int offset,int op}
+void :> {int index,int offset,int op}
+{int offset,int op} :> {int offset,int op}
+{int index,int offset,int op} :> {int index,int offset,int op}
+{int[][] classes,int[] pkg} :> {int[][] classes,int[] pkg}
+void :> {int f,int g}
+{int f,int g} :> {int f,int g}
+{int f,int g}[] :> {int f,int g}[]
+void :> {int f,int g}[]
+void :> int|{int x,int y}
+int|{int x,int y} :> int
+int|{int x,int y} :> int|{int x,int y}
+int|{int x,int y} :> {int x,int y}
+void :> {int x,int y}|{int x,int z}
+{int x,int y}|{int x,int z} :> {int x,int y}
+{int x,int y}|{int x,int z} :> {int x,int z}
+void :> {bool x,bool y}|{int x,int z}
+{bool x,bool y}|{int x,int z} :> {bool x,bool y}
+{bool x,bool y}|{int x,int z} :> {int x,int z}
+void :> {int x}|{int y}
+void :> int|{int x}|{int y}
+int|{int x}|{int y} :> {int x}
+int|{int x}|{int y} :> {int y}
+int|{int x}|{int y} :> int
+void :> int|int[]|int[][]
+int|int[]|int[][] :> int[]
+int|int[]|int[][] :> int[][]
+int|int[]|int[][] :> int
+bool|int[] :> bool
+bool|int[] :> int[]
+bool|int[] :> bool|int[]
+void :> bool|int[][]
+bool|int[][] :> int[][]
+bool|int[][] :> bool|int[][]
+int|int[] :> int[]
+void :> {int x,int y}|{int x,int y,int z}
+{int x,int y,int z} :> {int x,int y,int z}
+{int x,int y}|{int x,int y,int z} :> {int x,int y,int z}
+{int x,int y}|{int x,int y,int z} :> {int x,int y}
+void :> {int row}
+void :> {int col}
+void :> null|{int col}|{int row}|{int col,int row}
+null|{int col}|{int row}|{int col,int row} :> null
+null|{int col}|{int row}|{int col,int row} :> {int row}
+null|{int col}|{int row}|{int col,int row} :> {int col}
+null|{int col}|{int row}|{int col,int row} :> {int col,int row}
+void :> {any f1,int f2}
+{any f1,int f2} :> {int[] f1,int f2}
+{any f1,int f2} :> {any f1,int f2}
+{any f1,int f2} :> {int f1,int f2}
+void :> bool|int|int[]
+bool|int|int[] :> int
+bool|int|int[] :> bool
+bool|int|int[] :> int[]
+void :> int|{int[] msg}
+int|{int[] msg} :> {int[] msg}
+int|{int[] msg} :> int
+void :> int|{int op}|{int[] msg}
+int|{int op}|{int[] msg} :> {int[] msg}
+int|{int op}|{int[] msg} :> int
+int|{int op}|{int[] msg} :> {int op}
+null|bool|int :> bool
+bool|int :> bool|int
+int :> null|int
+void :> {int[] msg}
+{int[] input}|{int[] msg} :> {int[] input}
+{int[] input}|{int[] msg} :> {int[] msg}
+{int[] msg} :> {int[] msg}
+int|int[] :> int|int[]
+void :> {int[] data,int op}
+void :> {int index}
+void :> {int index}|{int[] data,int op}
+{int index}|{int[] data,int op} :> {int index}|{int[] data,int op}
+{int[] data,int op} :> {int[] data,int op}
+{int index}|{int[] data,int op} :> {int[] data,int op}
+{int index} :> {int index}
+{int index}|{int[] data,int op} :> {int index}
+void :> {int mode,int op}
+void :> {int mode,int op}|{int op,bool[] rest}
+{int mode,int op}|{int op,bool[] rest} :> {int mode,int op}|{int op,bool[] rest}
+{int mode,int op}|{int op,bool[] rest} :> {int mode,int op}
+{int mode,int op}|{int op,bool[] rest} :> {int op,bool[] rest}
+{int mode,int op} :> {int mode,int op}
+void :> {{int dum}[] data,int op}
+void :> {int[] data,int op}|{{int dum}[] data,int op}
+{int[] data,int op}|{{int dum}[] data,int op} :> {int[] data,int op}|{{int dum}[] data,int op}
+{int[] data,int op}|{{int dum}[] data,int op} :> {int[] data,int op}
+void :> {int|int[] op}
+{int|int[] op} :> {int op}
+{int|int[] op} :> {int|int[] op}
+{int|int[] op} :> {int[] op}
+void :> {int[]|int il,int op}
+{int[]|int il,int op} :> {int il,int op}
+{int[]|int il,int op} :> {int[]|int il,int op}
+void :> int|{int[] id}
+void :> int|{int[] err}|{int[] id}
+int|{int[] err}|{int[] id} :> int|{int[] id}
+int|{int[] err}|{int[] id} :> {int[] err}
+int|{int[] id} :> int
+int|{int[] err}|{int[] id} :> int|{int[] err}|{int[] id}
+int|{int[] err}|{int[] id} :> int
+void :> {int index,int op}|{int offset,int op}
+{int index,int op}|{int offset,int op} :> {int index,int op}|{int offset,int op}
+{int index,int op}|{int offset,int op} :> {int index,int op}
+void :> {int header,int op,int[] rest}
+void :> {int op,int[] payload}|{int header,int op,int[] rest}
+{int op,int[] payload}|{int header,int op,int[] rest} :> {int op,int[] payload}
+any :> {int index}|{int[] data,int op}
+any :> {int[] data,int op}

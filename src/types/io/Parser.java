@@ -1,12 +1,8 @@
 package types.io;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import types.core.SyntacticType;
-import types.core.Types;
-import wyautl.core.Automaton;
 
 public class Parser {
 	private String input;
@@ -31,9 +27,9 @@ public class Parser {
 			char lookahead = input.charAt(index);
 
 			if(lookahead == '&') {
-				return parseIntersection(lhs);				
+				return parseIntersection(lhs);
 			} else if(lookahead == '|') {
-				return parseUnion(lhs);				
+				return parseUnion(lhs);
 			}
 		}
 
@@ -41,7 +37,7 @@ public class Parser {
 	}
 
 	public SyntacticType parseUnion(SyntacticType first) {
-		ArrayList<SyntacticType> types = new ArrayList<SyntacticType>();
+		ArrayList<SyntacticType> types = new ArrayList<>();
 		types.add(first);
 		while(expecting('|',')','}',EOF) == '|') {
 			match("|");
@@ -50,9 +46,9 @@ public class Parser {
 		SyntacticType[] typeArray = new SyntacticType[types.size()];
 		return new SyntacticType.Union(types.toArray(typeArray));
 	}
-	
+
 	public SyntacticType parseIntersection(SyntacticType first) {
-		ArrayList<SyntacticType> types = new ArrayList<SyntacticType>();
+		ArrayList<SyntacticType> types = new ArrayList<>();
 		types.add(first);
 		while(expecting('&',')','}',EOF) == '&') {
 			match("&");
@@ -61,7 +57,7 @@ public class Parser {
 		SyntacticType[] typeArray = new SyntacticType[types.size()];
 		return new SyntacticType.Intersection(types.toArray(typeArray));
 	}
-		
+
 	public SyntacticType parseTerm() {
 		skipWhiteSpace();
 		char lookahead = input.charAt(index);
@@ -71,8 +67,8 @@ public class Parser {
 		} else if (lookahead == '{') {
 			return parseTuple();
 		} else if (lookahead == '!') {
-			return parseNegation();			
-		} else {	
+			return parseNegation();
+		} else {
 			String word = readWord();
 			if (word.equals("int")) {
 				return SyntacticType.Int;
@@ -94,7 +90,7 @@ public class Parser {
 
 	private SyntacticType parseTuple() {
 		match("{");
-		ArrayList<SyntacticType> elements = new ArrayList<SyntacticType>();
+		ArrayList<SyntacticType> elements = new ArrayList<>();
 		elements.add(parse());
 		while (expecting('}', ',') == ',') {
 			match(",");
@@ -104,13 +100,13 @@ public class Parser {
 		SyntacticType[] elementArray = new SyntacticType[elements.size()];
 		return new SyntacticType.Tuple(elements.toArray(elementArray));
 	}
-	
+
 	private SyntacticType parseNegation() {
 		match("!");
 		SyntacticType type = parseTerm();
 		return new SyntacticType.Negation(type);
 	}
-	
+
 	private String readWord() {
 		int start = index;
 		while (index < input.length() && Character.isLetter(input.charAt(index))) {
@@ -122,7 +118,7 @@ public class Parser {
 	/**
 	 * Try and match one of the expected strings. If one of the expecting is
 	 * EOF, then we are allowed to match the EOF as well.
-	 * 
+	 *
 	 * @param expecting
 	 * @return
 	 */
@@ -141,7 +137,7 @@ public class Parser {
 		error();
 		throw new RuntimeException(); // dead code
 	}
-	
+
 	private void match(String text) {
 		skipWhiteSpace();
 		if (input.startsWith(text, index)) {
@@ -163,7 +159,7 @@ public class Parser {
 		    + "' at position " + index + " of input '" + input + "'\n";
 		throw new RuntimeException(msg);
 	}
-	
+
 	private boolean contains(char[] chars, char c) {
 		for(int i=0;i!=chars.length;++i) {
 			if(chars[i] == c) {
@@ -172,6 +168,6 @@ public class Parser {
 		}
 		return false;
 	}
-	
+
 	private static final char EOF = 3;
 }
