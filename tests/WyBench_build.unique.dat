@@ -1,0 +1,93 @@
+int :> int
+void :> int[]
+void :> int
+void :> {int[][] args,{method(any)->() print,method(int[])->() print_s,method(any)->() println,method(int[])->() println_s} out}
+int[] :> int[]
+{method()->(int) available,method()->() close,method()->(bool) hasMore,method(int)->(byte[]) read,method()->(byte[]) readAll} :> {method()->(int) available,method()->() close,method()->(bool) hasMore,method(int)->(byte[]) read,method()->(byte[]) readAll}
+byte[] :> byte[]
+null|int[] :> null|int[]
+any :> int
+
+bool :> bool
+void :> {int[][] data,int height,int width}
+int[][] :> int[][]
+void :> int[][]
+{int[][] data,int height,int width} :> {int[][] data,int height,int width}
+void :> bool
+{int[][] data,int height,int width} :> int
+int :> {int[][] data,int height,int width}
+int[] :> void
+{int[][] args,{method(any)->() print,method(int[])->() print_s,method(any)->() println,method(int[])->() println_s} out} :> {int[][] args,{method(any)->() print,method(int[])->() print_s,method(any)->() println,method(int[])->() println_s} out}
+void :> {int col,int row}
+{int col,int row} :> {int col,int row}
+void :> {int col,int row}[]
+void :> {int col,int row}[][]
+{int col,int row}[][] :> {int col,int row}[][]
+{int col,int row}[] :> {int col,int row}[]
+void :> {int[] items,int length}
+int :> int[]
+bool[] :> int[]
+bool :> int[]
+int[] :> int
+void :> int[][][]
+int[][][] :> int[][][]
+void :> {int cindex,int[][] graph,bool[] inComponent,int index,int[] rindex,{int[] items,int length} stack,bool[] visited}
+{int cindex,int[][] graph,bool[] inComponent,int index,int[] rindex,{int[] items,int length} stack,bool[] visited} :> {int cindex,int[][] graph,bool[] inComponent,int index,int[] rindex,{int[] items,int length} stack,bool[] visited}
+{int[] items,int length} :> {int[] items,int length}
+null|int[][] :> null|int[][]
+void :> byte[]
+byte :> byte
+byte[] :> byte
+void :> byte
+void :> null|int
+null|int :> int
+null|int :> null
+null|int :> null|int
+any :> int[]
+null|int[] :> int[]
+void :> {int button,bool orange}
+void :> {int button,bool orange}[]
+{int button,bool orange}[] :> {int button,bool orange}[]
+{int button,bool orange} :> {int button,bool orange}
+void :> {int[] data,int rpos,int wpos}
+{int[] data,int rpos,int wpos} :> {int[] data,int rpos,int wpos}
+void :> {bool amber,bool green,bool red}
+{bool amber,bool green,bool red} :> {bool amber,bool green,bool red}
+void :> null|int[]
+null|int[] :> null
+void :> {int day,int month,int year}
+{int day,int month,int year} :> {int day,int month,int year}
+void :> {int[] data,int length}
+{int[] data,int length} :> {int[] data,int length}
+void :> {int carsOnBr,int carsOnIl,int carsOnMl}
+{int carsOnBr,int carsOnIl,int carsOnMl} :> {int carsOnBr,int carsOnIl,int carsOnMl}
+void :> {bool doorOpen,bool heatOn,int timer}
+{bool doorOpen,bool heatOn,int timer} :> {bool doorOpen,bool heatOn,int timer}
+void :> bool[]
+bool[] :> bool[]
+int :> bool[]
+int[] :> bool[]
+bool[] :> bool
+bool :> bool[]
+bool[] :> int
+bool :> int
+void :> {int character,int from,int to}
+void :> {{int character,int from,int to}[] transitions}
+{{int character,int from,int to}[] transitions} :> {{int character,int from,int to}[] transitions}
+{int character,int from,int to} :> {int character,int from,int to}
+{{int character,int from,int to}[] transitions} :> {int character,int from,int to}[]
+{int character,int from,int to}[] :> {int character,int from,int to}[]
+void :> {int character,int from,int to}[]
+{int character,int from,int to}[] :> {{int character,int from,int to}[] transitions}
+any :> bool
+void :> &int[]
+&int[] :> &int[]
+void :> {int denominator,int numerator}
+{int denominator,int numerator} :> {int denominator,int numerator}
+void :> {bool[][] cells,int height,int width}
+bool[][] :> bool[][]
+{bool[][] cells,int height,int width} :> {bool[][] cells,int height,int width}
+void :> {int x,int y}
+{int[] board,bool circlesTurn} :> {int[] board,bool circlesTurn}
+{int x,int y} :> {int x,int y}
+void :> {int[] board,bool circlesTurn}
