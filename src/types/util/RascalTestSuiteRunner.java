@@ -106,7 +106,7 @@ public class RascalTestSuiteRunner {
 	private static long extractRuntime(StringBuffer buffer) {
 		Scanner scanner = new Scanner(buffer.toString());
 		scanner.nextLine(); // skip version
-		int time = Integer.parseInt(scanner.nextLine().replace("ms",""));
+		int time = Integer.parseInt(scanner.nextLine().replace("ns",""));
 		scanner.close();
 		return time;
 	}
