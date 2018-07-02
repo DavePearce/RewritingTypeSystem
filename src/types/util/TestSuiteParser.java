@@ -50,7 +50,11 @@ public class TestSuiteParser {
 			line = line.replaceAll(" :> ", ":");
 			String[] split = line.split(":");
 			if(split.length == 2) {
+//				try {
 				printTest(count++,split[0],split[1]);
+//				} catch(RuntimeException e) {
+//					System.err.println("SKIPPING: line " + line);
+//				}
 			}
 		}
 		printCloseInnerClass();

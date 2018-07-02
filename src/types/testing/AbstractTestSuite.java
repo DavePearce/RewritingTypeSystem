@@ -49,10 +49,24 @@ public class AbstractTestSuite {
 	}
 
 	public static SubtypeQuery createSubtypeQuery(SyntacticType sup, SyntacticType sub) {
+		//printRascalAssertion(sup,sub);
 		if(rewriting) {
 			return new RewritingSubtypeQuery(sup,sub);
 		} else {
 			return new WhileySubtypeQuery(sup,sub);
+		}
+	}
+
+	private static void printRascalAssertion(SyntacticType sup, SyntacticType sub) {
+		// Construct type
+		SyntacticType type = new SyntacticType.Intersection(new SyntacticType.Negation(sup),sub);
+		// Construct query (so we can work out whether true or false);
+		SubtypeQuery query = new RewritingSubtypeQuery(sup,sub);
+		query.exec();
+		if(query.result()) {
+			System.err.println("\t\tassert simplify(" + type.toRascalString() + ") == Void();");
+		} else {
+			System.err.println("\t\tassert simplify(" + type.toRascalString() + ") != Void();");
 		}
 	}
 }

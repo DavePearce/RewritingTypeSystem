@@ -37,6 +37,13 @@ public abstract class SyntacticType {
 	public abstract boolean accepts(Value v);
 
 	/**
+	 * Generate a string version suitable for use with Rascal.
+	 *
+	 * @return
+	 */
+	public abstract String toRascalString();
+
+	/**
 	 * Represents the primitive integer type
 	 *
 	 * @author David J. Pearce
@@ -47,6 +54,10 @@ public abstract class SyntacticType {
 		@Override
 		public String toString() {
 			return "int";
+		}
+		@Override
+		public String toRascalString() {
+			return "Int()";
 		}
 		@Override
 		public boolean accepts(Value v) {
@@ -67,7 +78,10 @@ public abstract class SyntacticType {
 		public String toString() {
 			return "any";
 		}
-
+		@Override
+		public String toRascalString() {
+			return "Any()";
+		}
 		@Override
 		public boolean accepts(Value v) {
 			return true;
@@ -90,7 +104,6 @@ public abstract class SyntacticType {
 		public SyntacticType getElement() {
 			return element;
 		}
-
 		@Override
 		public boolean equals(Object o) {
 			if(o instanceof Negation) {
@@ -109,7 +122,10 @@ public abstract class SyntacticType {
 		public String toString() {
 			return "!" + element;
 		}
-
+		@Override
+		public String toRascalString() {
+			return "Not(" + element.toRascalString() + ")";
+		}
 		@Override
 		public boolean accepts(Value v) {
 			return !element.accepts(v);
@@ -157,6 +173,18 @@ public abstract class SyntacticType {
 				r = r + elements[i].toString();
 			}
 			return r + "}";
+		}
+
+		@Override
+		public String toRascalString() {
+			String r = "Tuple([";
+			for(int i=0;i!=elements.length;++i) {
+				if(i!=0) {
+					r = r + ", ";
+				}
+				r = r + elements[i].toRascalString();
+			}
+			return r + "])";
 		}
 
 		@Override
@@ -219,6 +247,18 @@ public abstract class SyntacticType {
 		}
 
 		@Override
+		public String toRascalString() {
+			String r = "And({";
+			for (int i = 0; i != elements.length; ++i) {
+				if (i != 0) {
+					r = r + ", ";
+				}
+				r = r + elements[i].toRascalString();
+			}
+			return r + "})";
+		}
+
+		@Override
 		public boolean accepts(Value v) {
 			for(SyntacticType t : elements) {
 				if(!t.accepts(v)) {
@@ -270,6 +310,19 @@ public abstract class SyntacticType {
 			}
 			return r + ")";
 		}
+
+		@Override
+		public String toRascalString() {
+			String r = "Or({";
+			for (int i = 0; i != elements.length; ++i) {
+				if (i != 0) {
+					r = r + ", ";
+				}
+				r = r + elements[i].toRascalString();
+			}
+			return r + "})";
+		}
+
 		@Override
 		public boolean accepts(Value v) {
 			for(SyntacticType t : elements) {
