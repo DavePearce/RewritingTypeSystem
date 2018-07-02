@@ -31,10 +31,12 @@ public class RascalTestSuiteRunner {
 		//
 		long[] totals = new long[NRUNS];
 		long warmupStart = System.currentTimeMillis();
+		long warmupMemoryStart = Runtime.getRuntime().freeMemory();
 		for (int i = 0; i != NWARMUPS; ++i) {
 			runExperiment(rascalFile);
 		}
 		long runsStart = System.currentTimeMillis();
+		long runsMemoryStart = Runtime.getRuntime().freeMemory();
 		for (int i = 0; i != NRUNS; ++i) {
 			//long start = System.nanoTime();
 			long time = runExperiment(rascalFile);
@@ -42,11 +44,15 @@ public class RascalTestSuiteRunner {
 			totals[i] = time;
 			System.gc();
 		}
+		long finishMemory = Runtime.getRuntime().freeMemory();
 		long finish = System.currentTimeMillis();
 		System.out.println("Command-Line Options: " + Arrays.toString(args));
 		System.out.println("Total time: " + (finish - warmupStart) + "ms");
+		System.out.println("Total memory: " + (finishMemory - warmupMemoryStart)/1024 + "mb");
 		System.out.println("Warmup time: " + (runsStart - warmupStart) + "ms");
+		System.out.println("Warmup memory: " + (runsMemoryStart - warmupMemoryStart)/1024 + "mb");
 		System.out.println("Total run time: " + (finish - runsStart) + "ms");
+		System.out.println("Total run memory: " + (finishMemory - runsMemoryStart)/2014 + "mb");
 		double mean = average(totals);
 		double stddev = standardDeviation(totals);
 		System.out.println("Mean run time: " + round(mean, 2) + "ns (" + (finish - runsStart) / NRUNS + "ms)");
