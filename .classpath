@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="lib/wyil-all-v0.3.40.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/WhileyRewriteLanguage"/>
 	<classpathentry kind="lib" path="lib/wyrl-v0.4.6.jar"/>
+	<classpathentry kind="lib" path="lib/rascal-shell-stable.jar"/>
 	<classpathentry kind="output" path="src"/>
 </classpath>
