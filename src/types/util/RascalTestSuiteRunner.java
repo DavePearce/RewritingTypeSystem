@@ -20,7 +20,6 @@ public class RascalTestSuiteRunner {
 	private static final int NWARMUPS = 5; // number of warm-up runs to discard
 	private static final int NRUNS = 10; // number of runs to average over
 
-
 	public static void main(String[] args) throws Throwable {
 		if(args.length == 0) {
 			System.out.println("usage: RascalTestSuiteRunner TestSuite.rsc");
@@ -35,6 +34,7 @@ public class RascalTestSuiteRunner {
 		for (int i = 0; i != NWARMUPS; ++i) {
 			runExperiment(rascalFile);
 		}
+		System.gc();
 		long runsStart = System.currentTimeMillis();
 		long runsMemoryStart = Runtime.getRuntime().freeMemory();
 		for (int i = 0; i != NRUNS; ++i) {
@@ -114,7 +114,7 @@ public class RascalTestSuiteRunner {
 	private static long extractRuntime(StringBuffer buffer) {
 		Scanner scanner = new Scanner(buffer.toString());
 		scanner.nextLine(); // skip version
-		int time = Integer.parseInt(scanner.nextLine().replace("ns",""));
+		long time = Long.parseLong(scanner.nextLine().replace("ns",""));
 		scanner.close();
 		return time;
 	}
