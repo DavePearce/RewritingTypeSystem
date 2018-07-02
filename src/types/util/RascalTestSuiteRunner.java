@@ -52,10 +52,12 @@ public class RascalTestSuiteRunner {
 		System.out.println("Warmup time: " + (runsStart - warmupStart) + "ms");
 		System.out.println("Warmup memory: " + (runsMemoryStart - warmupMemoryStart)/1024 + "mb");
 		System.out.println("Total run time: " + (finish - runsStart) + "ms");
-		System.out.println("Total run memory: " + (finishMemory - runsMemoryStart)/2014 + "mb");
+		long runMemory = (finishMemory - runsMemoryStart)/1024;
+		System.out.println("Total run memory: " + runMemory + "mb");
 		double mean = average(totals);
 		double stddev = standardDeviation(totals);
 		System.out.println("Mean run time: " + round(mean, 2) + "ns (" + (finish - runsStart) / NRUNS + "ms)");
+		System.out.println("Mean memory: " + (runMemory / NRUNS));
 		System.out.println("Standard deviation: " + round(stddev, 2) + "ns");
 		System.out.println("Coefficiant of Variation: " + round(stddev / mean, 2));
 		System.out.print("Runs: [");
