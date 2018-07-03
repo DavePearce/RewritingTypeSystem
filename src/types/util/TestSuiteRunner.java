@@ -38,11 +38,15 @@ public class TestSuiteRunner {
 				testInstances.add(m.getDeclaringClass().newInstance());
 			}
 			long[] totals = new long[NRUNS];
+			System.gc();
 			long warmupStart = System.currentTimeMillis();
+			long warmupMemoryStart = Runtime.getRuntime().freeMemory();
 			for(int i=0;i!=NWARMUPS;++i)  {
 				runExperiment(testInstances,testCases);
 			}
+			System.gc();
 			long runsStart = System.currentTimeMillis();
+			long runsMemoryStart = Runtime.getRuntime().freeMemory();
 			for(int i=0;i!=NRUNS;++i) {
 				long start = System.nanoTime();
 				runExperiment(testInstances,testCases);
@@ -51,13 +55,19 @@ public class TestSuiteRunner {
 				System.gc();
 			}
 			long finish = System.currentTimeMillis();
+			long finishMemory = Runtime.getRuntime().freeMemory();
 			System.out.println("Command-Line Options: " + Arrays.toString(args));
 			System.out.println("Total time: " + (finish-warmupStart) + "ms");
+			System.out.println("Total memory: " + (finishMemory - warmupMemoryStart)/1024 + "mb");
 			System.out.println("Warmup time: " + (runsStart-warmupStart) + "ms");
+			System.out.println("Warmup memory: " + (runsMemoryStart - warmupMemoryStart)/1024 + "mb");
 			System.out.println("Total run time: " + (finish-runsStart) + "ms");
+			long runMemory = (finishMemory - runsMemoryStart);
+			System.out.println("Total run memory: " + runMemory/1024 + "mb");
 			double mean = average(totals);
 			double stddev = standardDeviation(totals);
 			System.out.println("Mean run time: " + round(mean,2) + "ns (" + (finish-runsStart)/NRUNS +"ms)");
+			System.out.println("Mean memory: " + (runMemory / (NRUNS * 1024) + "mb"));
 			System.out.println("Standard deviation: " + round(stddev,2) + "ns");
 			System.out.println("Coefficiant of Variation: " + round(stddev/mean,2));
 			System.out.print("Runs: [");
